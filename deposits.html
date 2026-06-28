@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Deposits | Pro Max</title>
+
+    <link rel="stylesheet" href="style1.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .status-badge { background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .progress-container { background: rgba(255,255,255,0.05); height: 6px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        .progress-bar-node { background: linear-gradient(90deg, #FFD700, #B8860B); height: 100%; box-shadow: 0 0 10px rgba(184, 134, 11, 0.5); transition: width 1s ease-in-out; }
+        .amount-text { font-size: 22px; font-weight: 800; color: #ffffff !important; }
+        .chart-container { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 20px; margin-bottom: 30px; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div id="nav-placeholder"></div>
+
+    <main class="max-w-7xl mx-auto space-y-8 pt-10 relative z-10">
+        
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black orbitron italic uppercase tracking-tighter">
+                    Active <span class="text-yellow-500">Deposits</span>
+                </h1>
+                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Mining Node Performance</p>
+            </div>
+            <button onclick="loadActiveDeposits()" class="bg-white/5 border border-white/10 p-3 rounded-xl hover:bg-white/10 transition-all group">
+                <i data-lucide="refresh-cw" class="w-5 h-5 text-yellow-500 group-hover:rotate-180 transition-transform duration-500"></i>
+            </button>
+        </div>
+
+        <div class="chart-container">
+            <p class="orbitron text-[10px] text-yellow-500 mb-4 uppercase tracking-widest">Earnings Projection</p>
+            <canvas id="performanceChart" height="100"></canvas>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="premium-card"><div class="inner-content stat-box">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/10"><i data-lucide="database" class="text-yellow-500 w-6 h-6"></i></div>
+                    <p class="label-text">Total Active Capital</p>
+                </div>
+                <h3 class="amount-text orbitron">$<span id="total-active-capital">0.00</span></h3>
+            </div></div>
+
+            <div class="premium-card"><div class="inner-content stat-box">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/10"><i data-lucide="trending-up" class="text-green-500 w-6 h-6"></i></div>
+                    <p class="label-text">Daily Profit (0.23%)</p>
+                </div>
+                <h3 class="amount-text orbitron text-green-400">$<span id="total-daily-profit">0.00</span></h3>
+            </div></div>
+        </div>
+
+        <div id="deposits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+            <div class="col-span-full text-center py-20">
+                <div class="inline-block animate-spin text-yellow-500 mb-4"><i data-lucide="refresh-cw" class="w-10 h-10"></i></div>
+                <p class="orbitron text-xs text-gray-500 uppercase tracking-widest">Scanning Blockchain Nodes...</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="components.js"></script>
+    <script src="web3-handler.js"></script>
+    
+    <script>
+        const DAILY_ROI = 0.23; 
+        let myChart = null;
+async function loadActiveDeposits() {
+    const grid = document.getElementById('deposits-grid');
+    const activeContract = window.contract;
+    const address = localStorage.getItem('userAddress');
+
+    if (!activeContract || !address) {
+        setTimeout(loadActiveDeposits, 1000);
+        return;
+    }
+
+    try {
+        // 1. Stake Count fetch karein
+        const stakeCountBN = await activeContract.getStakeCount(address);
+        const stakeCount = stakeCountBN.toNumber(); // Convert BigNumber to number
+        console.log("Stake Count:", stakeCount);
+        
+        if (stakeCount === 0) {
+            grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500 uppercase text-xs">No active nodes found.</div>`;
+            return;
+        }
+        
+        let html = '';
+        let totalActive = 0;
+        let foundAny = false;
+
+        // 2. Loop sahi tarike se chalayein
+        for (let i = 0; i < stakeCount; i++) {
+            const s = await activeContract.getStake(address, i);
+            
+            // Check active status
+            if (s.active) {
+                foundAny = true;
+                const amount = parseFloat(ethers.utils.formatUnits(s.amount, 18));
+                const maxPayout = parseFloat(ethers.utils.formatUnits(s.maxPayout, 18));
+                const earned = parseFloat(ethers.utils.formatUnits(s.totalEarnedFromStake, 18));
+                totalActive += amount;
+                
+                // Progress calculation
+                let progress = maxPayout > 0 ? ((earned / maxPayout) * 100).toFixed(1) : 0;
+
+                html += `
+                <div class="premium-card">
+                    <div class="inner-content !block p-6">
+                        <div class="flex justify-between mb-4">
+                            <h3 class="text-xl font-black orbitron text-white">$${amount.toLocaleString()}</h3>
+                            <span class="status-badge">${s.withBurn ? 'BURN' : 'NORMAL'}</span>
+                        </div>
+                        <div class="progress-container"><div class="progress-bar-node" style="width: ${progress}%"></div></div>
+                        <p class="text-[9px] text-gray-500 mt-2 uppercase">Earned: $${earned.toFixed(2)} / $${maxPayout.toFixed(2)}</p>
+                    </div>
+                </div>`;
+            }
+        }
+
+        // 3. UI Update
+        document.getElementById('total-active-capital').innerText = totalActive.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('total-daily-profit').innerText = (totalActive * (DAILY_ROI / 100)).toFixed(2);
+        
+        grid.innerHTML = foundAny ? html : `<div class="col-span-full text-center py-20 text-gray-600">No Active Nodes</div>`;
+        lucide.createIcons();
+
+    } catch (err) {
+        console.error("Critical Error in loadActiveDeposits:", err);
+        grid.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 text-xs">Error: ${err.message}</div>`;
+    }
+}
+        
+        window.addEventListener('load', () => setTimeout(loadActiveDeposits, 1500));
+    </script>
+</body>
+</html>
