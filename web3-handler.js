@@ -413,14 +413,15 @@ window.fetchBlockchainHistory = async function(categories) {
 
 window.renderLevels = async function(phaseId) {
     const container = document.getElementById('levels-container');
+    if (!container) return;
+    
     container.innerHTML = `<p class="text-xs text-yellow-500">Loading Levels...</p>`;
 
     try {
         let html = "";
-        // कॉन्ट्रैक्ट की mapping 'phaseCosts(phaseId, level)' से डेटा लाएं
         for(let level = 1; level <= 5; level++) {
-            // कॉन्ट्रैक्ट से कॉस्ट फेच करें
-            const cost = await window.contract.phaseCosts(phaseId, level);
+            // अब सीधे नए फंक्शन का उपयोग करें
+            const cost = await window.contract.getLevelCost(phaseId, level);
             const costInUsdt = ethers.utils.formatEther(cost);
             
             html += `
