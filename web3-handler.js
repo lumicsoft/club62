@@ -108,17 +108,7 @@ async function init() {
         console.error("Init Error:", error);
     }
 }
-// --- CORE LOGIC ---
-window.handleRegister = async function() {
-    const ref = document.getElementById('reg-referrer').value.trim();
-    if (!ethers.utils.isAddress(ref)) return alert("Invalid Address");
-    try {
-        const tx = await contract.register(ref);
-        await tx.wait();
-        alert("Registration Successful!");
-        window.location.href = "index1.html";
-    } catch (err) { alert("Registration Failed: " + err.message); }
-};
+
 
 window.handleActivatePhase = async function(phaseId) {
     try {
@@ -232,45 +222,67 @@ window.updateStockBalance = async function(address) {
     }
 }
 
-window.handleCompoundDaily = async function() {
-    const compoundBtn = event.target;
-    const originalText = compoundBtn.innerText;
-    try {
-        compoundBtn.disabled = true; compoundBtn.innerText = "WAITING...";
-        const tx = await contract.reinvestMatured();
-        compoundBtn.innerText = "REINVESTING...";
-        await tx.wait();
-        alert("Reinvestment Successful!");
-        location.reload(); 
-    } catch (err) {
-        alert("Reinvest failed: " + (err.reason || err.message));
-        compoundBtn.innerText = originalText; compoundBtn.disabled = false;
-    }
-}
+
 
 
 window.handleLogin = async function() {
     try {
         if (!window.ethereum) return alert("Please install Trust Wallet or MetaMask!");
+        
+        // 1. अकाउंट रिक्वेस्ट करें
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const userData = await contract.users(accounts[0]);
-        if (userData.exists === true) { localStorage.setItem('userAddress', accounts[0]); window.location.href = "index1.html"; }
-        else { alert("Not registered!"); window.location.href = "register.html"; }
-    } catch (err) { console.error("Login Error:", err); }
-}
+        const userAddress = accounts[0];
 
+        // 2. कॉन्ट्रैक्ट से चेक करें कि क्या यूजर रजिस्टर्ड है
+        // आपके कॉन्ट्रैक्ट के isUserRegistered फंक्शन का उपयोग
+        const isRegistered = await contract.isUserRegistered(userAddress);
+
+        if (isRegistered) {
+            localStorage.setItem('userAddress', userAddress);
+            window.location.href = "index1.html";
+        } else {
+            alert("Account not registered! Redirecting to registration page.");
+            window.location.href = "register.html";
+        }
+    } catch (err) { 
+        console.error("Login Error:", err); 
+        alert("Login failed: " + (err.message || "Unknown error"));
+    }
+}
 window.handleRegister = async function() {
     const refField = document.getElementById('reg-referrer');
     const regBtn = event.target;
-    if (!refField || !ethers.utils.isAddress(refField.value.trim())) return alert("Valid Referrer Address is required!");
+    const referrer = refField ? refField.value.trim() : "";
+
+    // 1. वैलिडेशन चेक
+    if (!referrer || !ethers.utils.isAddress(referrer)) {
+        return alert("Please enter a valid Referrer Address!");
+    }
+
     try {
-        regBtn.disabled = true; regBtn.innerText = "REGISTERING...";
-        const tx = await contract.register(refField.value.trim(), { gasLimit: 300000 });
-        await tx.wait();
+        regBtn.disabled = true;
+        regBtn.innerText = "REGISTERING...";
+
+        // 2. ट्रांजेक्शन ट्रिगर करें
+        // gasLimit को ऑटो-एस्टिमेट करने दें या 300,000 रखें जैसा कि आपने सही किया था
+        const tx = await contract.register(referrer, { gasLimit: 300000 });
+        
+        console.log("Transaction Hash:", tx.hash);
+        await tx.wait(); // ट्रांजेक्शन कन्फर्म होने का इंतज़ार करें
+
+        // 3. सक्सेस के बाद
         localStorage.setItem('userAddress', await signer.getAddress());
         alert("Registration Successful!");
         window.location.href = "index1.html";
-    } catch (err) { alert("Error: " + (err.reason || "Registration failed.")); regBtn.disabled = false; }
+
+    } catch (err) {
+        console.error("Registration Error:", err);
+        // कॉन्ट्रैक्ट से आने वाले एरर को दिखाएं
+        alert("Registration Failed: " + (err.reason || err.data?.message || err.message));
+        
+        regBtn.disabled = false;
+        regBtn.innerText = "REGISTER"; // बटन वापस ओरिजिनल टेक्स्ट पर लाएं
+    }
 }
 
 window.handleLogout = function() {
