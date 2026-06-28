@@ -16,24 +16,18 @@ const RANK_DETAILS = [
             { name: "D. Diamond", count: 3000, vol: 1500000 },
             { name: "C. Diamond", count: 5000, vol: 2000000 }
 ];
-
 const CONTRACT_ABI = [
-    "function register(address referrer) external",
-    "function stake(uint256 amount, bool withBurn) external",
-    "function claimROI(uint256 stakeIndex) external",
-    "function withdraw(uint256 amount) external",
-    "function requestUnstake(uint256 stakeIndex) external",
-    "function claimUnstake(uint256 stakeIndex) external",
-    "function totalTeamBusiness(address) view returns (uint256)",
-     "function getPendingROI(address user) external view returns (uint256)",
-    "function users(address) view returns (bool exists, address referrer, uint256 totalStaked, uint256 totalIncome, uint256 totalWithdrawn, uint256 activeDirects, uint256 teamCount, string currentRank)",
-    "function getIncomeHistory(address user) external view returns(tuple(string incomeType, uint256 amount, uint256 timestamp)[])",
-    "function getUserStats(address user) external view returns(uint256 roi, uint256 level, uint256 referral, uint256 reward, uint256 teamShare, uint256 teamCount, string rank)",
-    "function getIncomeByType(address user, string incomeType) external view returns (uint256)",
-    // Naye added functions:
-    "function getTeamByLevel(address _user, uint256 _level) external view returns (address[], uint256[])",
-    "function getStakeCount(address user) external view returns (uint256)",
-    "function getStake(address user, uint256 index) external view returns (tuple(uint256 amount, uint256 startTime, uint256 totalRoiReceived, uint256 maxPayout, bool withBurn, bool active, uint256 lastClaimTime, bool unstakeRequested, uint256 unstakeRequestTime, uint256 totalEarnedFromStake))"
+    "function register(address _referrer) external",
+    "function activatePhase(uint256 phaseId) external",
+    "function buyMatrixLevel(uint256 phaseId, uint256 level) external",
+    "function withdrawAllIncome() external",
+    "function withdrawStock(uint256 phaseId) external",
+    "function swapTokenToUSDT(uint256 _tokenAmount) external",
+    "function swapUSDTToToken(uint256 _usdtAmount) external",
+    "function getLiquidityDetails() external view returns (uint256, uint256, uint256)",
+    "function users(address) view returns (address referrer, address parent, address left, address right, uint256 directCount, uint256 paidDirectCount, uint256 directIncome, uint256 levelIncome, uint256 salaryIncome, uint256 totalEarned, uint256 lapsedIncome)",
+    "function getUserDetails(address _user) external view returns (address referrer, uint256 directInc, uint256 levelInc, uint256 salaryInc, uint256 totalEarned, uint256 lapsed)",
+    "function isUserRegistered(address _user) external view returns (bool)"
 ];
 const ERC20_ABI = ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"];
 
