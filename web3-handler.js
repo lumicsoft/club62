@@ -23,6 +23,7 @@ const CONTRACT_ABI = [
     "function withdrawAllIncome() external",
   "function withdrawStockAmount(uint256 _amount) external",
     "function swapTokenToUSDT(uint256 _tokenAmount) external",
+     "function getLevelCost(uint256 phaseId, uint256 level) external view returns (uint256)",
     "function swapUSDTToToken(uint256 _usdtAmount) external",
      "function getTotalAvailableStock(address _user) external view returns (uint256)",
      "function getLiquidityDetails() external view returns (uint256 totalTokens, uint256 totalLiquidity, uint256 liveRate)",
