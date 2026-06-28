@@ -221,16 +221,16 @@ window.handleWithdrawStockAmount = async function() {
 }
 
 
-window.handleClaimUnstake = async function(stakeIndex = 0) {
-    try {
-        const activeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
-        const tx = await activeContract.claimUnstake(stakeIndex);
-        await tx.wait();
-        alert("Capital Claimed!");
-        location.reload();
-    } catch (err) { alert("Error: " + err.message); }
-}
 
+window.updateStockBalance = async function(address) {
+    try {
+        const totalStock = await contract.getTotalAvailableStock(address);
+        // updateText ग्लोबल फंक्शन है जिसे हमने पहले बनाया था
+        updateText('total-stock-display', format(totalStock));
+    } catch (err) {
+        console.error("Stock Fetch Error:", err);
+    }
+}
 
 window.handleCompoundDaily = async function() {
     const compoundBtn = event.target;
@@ -436,55 +436,56 @@ async function fetchAndDisplayData() {
 
 
 // --- UPDATED fetchAllData FUNCTION ---
-async function fetchAllData(address) {
-    const refUrl = `${window.location.origin}/register.html?ref=${address}`; 
-    const refInput = document.getElementById('refURL');
-    if(refInput) refInput.value = refUrl;
-    
-    // Address display fix
-    const addrDisplay = document.getElementById('user-address');
-    if(addrDisplay) addrDisplay.innerText = address;
-    
+// --- ALL DATA SYNC FUNCTION ---
+window.fetchAllData = async function(address) {
     try {
-        // 1. getUserStats (returns: roi, level, referral, reward, teamShare, teamCount, rank)
-        const stats = await contract.getUserStats(address); 
+        console.log("Syncing all data for:", address);
+
+        // 1. Referral URL Setup
+        const refUrl = `${window.location.origin}/register.html?ref=${address}`; 
+        const refInput = document.getElementById('refURL');
+        if(refInput) refInput.value = refUrl;
         
-        // 2. User main data call
+        // 2. Address display fix
+        const addrDisplay = document.getElementById('user-address');
+        if(addrDisplay) addrDisplay.innerText = address;
+
+        // 3. Contract Data Calls
         const userData = await contract.users(address);
+        const details = await contract.getUserDetails(address);
+        const liq = await contract.getLiquidityDetails();
 
-        // --- Dashboard UI Mapping ---
+        // --- UI UPDATES ---
+        
+        // Structure & Network Data
+        updateText('referrer-address', userData.referrer);
+        updateText('parent-address', userData.parent);
+        updateText('left-child', userData.left);
+        updateText('right-child', userData.right);
+        
+        // Counts
+        updateText('direct-count', userData.directCount.toString());
+        updateText('paid-direct-count', userData.paidDirectCount.toString());
+        
+        // Income Details
+        updateText('direct-income', format(userData.directIncome));
+        updateText('level-income', format(userData.levelIncome));
+        updateText('salary-income', format(userData.salaryIncome));
+        updateText('total-earned', format(userData.totalEarned));
+        updateText('lapsed-income', format(userData.lapsedIncome));
+        
+        // Market Info
+        updateText('live-rate', format(liq.liveRate));
 
-        // Revenue Stats (From stats array)
-        updateText('roi-earning', format(stats[0]));        // ROI Income
-        updateText('level-earning', format(stats[1]));      // Team Bonus (Renamed Level Income)
-        updateText('referral-bonus', format(stats[2]));     // Referral Bonus
-        updateText('rank-earning', format(stats[3]));       // Reward Bonus (Renamed Reward)
-        updateText('team-profit-share', format(stats[4]));  // Team Profit Share Bonus (New)
-        
-        // Dashboard Stats Box Mapping
-        updateText('total-deposit', format(userData.totalStaked));
-        updateText('total-earned', format(userData.totalIncome));
-        updateText('total-withdrawn', format(userData.totalWithdrawn));
-        updateText('team-count', stats[5].toString());
-        updateText('directs-count', userData.activeDirects.toString());
-        
-        // Dynamic Rank Display
-        updateText('rank-display', stats[6].toString());
-        
-        // Withdrawable Balance (Available = Total Income - Total Withdrawn)
-        const withdrawable = userData.totalIncome.sub(userData.totalWithdrawn);
-        updateText('compounding-balance', format(withdrawable));
-        updateText('withdraw-balance-display', format(withdrawable));
-        updateText('cap-balance', format(withdrawable));
+        // 4. Stock Balance Update (Call to the window function)
+        await window.updateStockBalance(address); 
 
-        // Active Deposit for Compound Power
-        updateText('active-deposit', format(userData.totalStaked));
-        updateText('active-deposit-cp', format(userData.totalStaked));
+        console.log("Dashboard sync complete!");
 
     } catch (err) { 
-        console.error("Data Sync Error:", err); 
+        console.error("Fetch Data Error:", err); 
     }
-}
+};
 
 // Ensure ki 'format' function ethers.utils ka use kar raha ho
 const format = (val) => val ? parseFloat(ethers.utils.formatUnits(val, 18)).toFixed(2) : "0.00";
