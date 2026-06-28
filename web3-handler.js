@@ -1,6 +1,6 @@
 let provider, signer, contract;
 
-const CONTRACT_ADDRESS = "0xB5dC5e3860B16Bcd42D3AD4F7e740bAEbdc43Aa7"; 
+const CONTRACT_ADDRESS = "0xe5945e272f67Eb6aC59b3C91A7CABEb7054Ca509"; 
 const K62_TOKEN_ADDRESS = "0x66B16Abf39433208a7D769078739CEF4742CFF33";
 const USDT_ADDRESS = "0x3B66b1E08F55AF26c8eA14a73dA64b6bC8D799dE";    
 const TESTNET_CHAIN_ID = 97;
@@ -21,10 +21,13 @@ const CONTRACT_ABI = [
     "function activatePhase(uint256 phaseId) external",
     "function buyMatrixLevel(uint256 phaseId, uint256 level) external",
     "function withdrawAllIncome() external",
-    "function withdrawStock(uint256 phaseId) external",
+  "function withdrawStockAmount(uint256 _amount) external",
     "function swapTokenToUSDT(uint256 _tokenAmount) external",
     "function swapUSDTToToken(uint256 _usdtAmount) external",
-    "function getLiquidityDetails() external view returns (uint256, uint256, uint256)",
+     "function getTotalAvailableStock(address _user) external view returns (uint256)",
+     "function getLiquidityDetails() external view returns (uint256 totalTokens, uint256 totalLiquidity, uint256 liveRate)",
+    "function getUserTree(address _user) external view returns (address left, address right)",
+    "function getIncomeHistory(address _user) external view returns (tuple(uint256 amount, uint256 timestamp, string incomeType, address fromUser, uint256 phaseId)[])",
     "function users(address) view returns (address referrer, address parent, address left, address right, uint256 directCount, uint256 paidDirectCount, uint256 directIncome, uint256 levelIncome, uint256 salaryIncome, uint256 totalEarned, uint256 lapsedIncome)",
     "function getUserDetails(address _user) external view returns (address referrer, uint256 directInc, uint256 levelInc, uint256 salaryInc, uint256 totalEarned, uint256 lapsed)",
     "function isUserRegistered(address _user) external view returns (bool)"
@@ -106,86 +109,118 @@ async function init() {
     }
 }
 // --- CORE LOGIC ---
-window.handleDeposit = async function(withBurn) {
-    const amountInput = document.getElementById('deposit-amount');
-    const depositBtn = event.target; // Jo button click hua hai
-    
-    if (!amountInput || !amountInput.value || parseFloat(amountInput.value) < 100) {
-        return alert("Min 100 BLX required!");
-    }
-
+window.handleRegister = async function() {
+    const ref = document.getElementById('reg-referrer').value.trim();
+    if (!ethers.utils.isAddress(ref)) return alert("Invalid Address");
     try {
-        let activeSigner = window.signer || provider.getSigner();
-        let activeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, activeSigner);
+        const tx = await contract.register(ref);
+        await tx.wait();
+        alert("Registration Successful!");
+        window.location.href = "index1.html";
+    } catch (err) { alert("Registration Failed: " + err.message); }
+};
 
-        depositBtn.disabled = true;
-        depositBtn.innerText = "APPROVING...";
+window.handleActivatePhase = async function(phaseId) {
+    try {
+        const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
+        // 3 USDT Approve
+        await (await usdt.approve(CONTRACT_ADDRESS, ethers.utils.parseEther("3"))).wait();
+        const tx = await contract.activatePhase(phaseId);
+        await tx.wait();
+        alert("Phase Activated!");
+    } catch (err) { alert(err.message); }
+};
+window.handleBuyLevel = async function(phaseId, level, costInEther) {
+    try {
+        // 1. USDT कॉन्ट्रैक्ट का इंस्टेंस बनाएं
+        const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
+        
+        // 2. अमाउंट को Wei में कन्वर्ट करें
+        const amountInWei = ethers.utils.parseEther(costInEther.toString());
 
-        const amountInWei = ethers.utils.parseUnits(amountInput.value.toString(), 18);
-        const blxToken = new ethers.Contract(BLX_TOKEN_ADDRESS, ERC20_ABI, activeSigner);
-
-        // 1. Approval Step
-        const allowance = await blxToken.allowance(await activeSigner.getAddress(), CONTRACT_ADDRESS);
+        // 3. चेक करें कि कितना अप्रूव्ड है (Optional, but better UX)
+        const allowance = await usdt.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+        
+        // 4. अगर कम है, तो पहले Approve करें
         if (allowance.lt(amountInWei)) {
-            const approveTx = await blxToken.approve(CONTRACT_ADDRESS, amountInWei);
+            alert("Please approve USDT for this transaction");
+            const approveTx = await usdt.approve(CONTRACT_ADDRESS, amountInWei);
             await approveTx.wait();
         }
 
-        depositBtn.innerText = "SIGNING...";
-
-        // 2. Stake Step: yahan 'withBurn' dynamic parameter use ho raha hai
-        // stake(uint256 amount, bool withBurn)
-        const depositGas = await activeContract.estimateGas.stake(amountInWei, withBurn);
-        const tx = await activeContract.stake(amountInWei, withBurn, { 
-            gasLimit: depositGas.mul(150).div(100) 
-        });
-        
-        depositBtn.innerText = withBurn ? "BURNING & STAKING..." : "STAKING...";
+        // 5. अब लेवल खरीदें
+        const tx = await contract.buyMatrixLevel(phaseId, level);
         await tx.wait();
         
-        alert(withBurn ? "Stake with Burn Successful!" : "Stake Successful!");
-        location.reload(); 
-    } catch (err) {
-        console.error("Deposit Error:", err);
-        alert("Error: " + (err.data?.message || err.message || "Transaction Failed"));
-        depositBtn.innerText = withBurn ? "STAKE WITH BURN" : "STAKE WITHOUT BURN";
-        depositBtn.disabled = false;
-    }
-}
-
-window.handleClaimROI = async function(stakeIndex = 0) {
-    const claimBtn = event.target;
-    try {
-        claimBtn.disabled = true; claimBtn.innerText = "CLAIMING...";
-        const activeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
-        const tx = await activeContract.claimROI(stakeIndex);
-        await tx.wait();
-        alert("ROI Claimed Successfully!");
-        location.reload(); 
-    } catch (err) {
-        alert("Claim failed: " + (err.reason || err.message));
-        claimBtn.disabled = false; claimBtn.innerText = "CLAIM ROI";
-    }
-}
-window.handleRequestUnstake = async function(stakeIndex = 0) {
-    try {
-        const activeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
-        const tx = await activeContract.requestUnstake(stakeIndex);
-        await tx.wait();
-        alert("Unstake Requested! Wait 14 days to claim.");
-    } catch (err) { alert("Error: " + err.message); }
-}
-window.handleWithdraw = async function() {
-    const amount = document.getElementById('withdraw-amount').value;
-    if(!amount || amount <= 0) return alert("Enter valid amount");
-    try {
-        const amountInWei = ethers.utils.parseUnits(amount.toString(), 18);
-        const tx = await window.contract.withdraw(amountInWei);
-        await tx.wait();
-        alert("Withdrawal Successful!");
+        alert("Level Purchased Successfully!");
         location.reload();
-    } catch (err) { alert("Withdraw Error: " + (err.reason || err.message)); }
+        
+    } catch (err) { 
+        console.error(err);
+        alert("Transaction Failed: " + (err.reason || err.message)); 
+    }
+};
+
+window.handleSwapTokenToUSDT = async function(amountStr) {
+    try {
+        const amountInWei = ethers.utils.parseEther(amountStr);
+        const token = new ethers.Contract(K62_TOKEN_ADDRESS, ERC20_ABI, signer);
+        await (await token.approve(CONTRACT_ADDRESS, amountInWei)).wait();
+        await (await contract.swapTokenToUSDT(amountInWei)).wait();
+        alert("Swap Success!");
+    } catch (err) { alert(err.message); }
+};
+
+window.handleSwapUSDTToToken = async function(amountStr) {
+    try {
+        const amountInWei = ethers.utils.parseEther(amountStr);
+        const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
+        await (await usdt.approve(CONTRACT_ADDRESS, amountInWei)).wait();
+        await (await contract.swapUSDTToToken(amountInWei)).wait();
+        alert("Swap Success!");
+    } catch (err) { alert(err.message); }
+};
+
+window.handleWithdraw = async function() {
+    const withdrawBtn = event.target;
+    try {
+        withdrawBtn.disabled = true;
+        withdrawBtn.innerText = "WITHDRAWING...";
+        
+        // कॉन्ट्रैक्ट के withdrawAllIncome फंक्शन में कोई पैरामीटर नहीं है
+        const tx = await contract.withdrawAllIncome();
+        
+        await tx.wait();
+        alert("Withdrawal Successful! All income transferred to your wallet.");
+        location.reload();
+    } catch (err) { 
+        console.error("Withdraw Error:", err);
+        alert("Withdraw Error: " + (err.reason || err.message)); 
+        withdrawBtn.disabled = false;
+        withdrawBtn.innerText = "WITHDRAW ALL";
+    }
 }
+
+window.handleWithdrawStockAmount = async function() {
+    const inputAmount = document.getElementById('withdraw-stock-amount').value;
+    if (!inputAmount || inputAmount <= 0) return alert("Enter valid amount");
+
+    try {
+        // अमाउंट को Wei में कन्वर्ट करना जरूरी है (18 decimals)
+        const amountInWei = ethers.utils.parseEther(inputAmount.toString());
+        
+        const tx = await contract.withdrawStockAmount(amountInWei);
+        await tx.wait();
+        
+        alert("Stock Withdrawn Successfully!");
+        location.reload();
+    } catch (err) {
+        console.error(err);
+        alert("Withdraw Error: " + (err.reason || err.message));
+    }
+}
+
+
 window.handleClaimUnstake = async function(stakeIndex = 0) {
     try {
         const activeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
