@@ -309,7 +309,7 @@ async function setupApp(address) {
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x61' }], // 97 = 0x61
                 });
-                window.location.reload(); // स्विच होने के बाद रीलोड
+                window.location.reload(); 
                 return;
             } catch (switchError) {
                 if (switchError.code === 4902) {
@@ -323,23 +323,35 @@ async function setupApp(address) {
         console.error("Network check failed:", err);
     }
 
-    // 2. कॉन्ट्रैक्ट डेटा और रिडायरेक्शन लॉजिक
-    const userData = await contract.users(address);
-    const path = window.location.pathname;
+    // 2. कॉन्ट्रैक्ट डेटा और रिडायरेक्शन लॉजिक (Updated for isUserRegistered)
+    try {
+        const isRegistered = await contract.isUserRegistered(address);
+        const path = window.location.pathname;
 
-    console.log("User Exists in Contract:", userData.exists);
+        console.log("Is User Registered:", isRegistered);
 
-    if (!userData.exists && !path.includes('register.html')) {
-        window.location.href = "register.html";
-        return;
-    } else if (userData.exists && path.includes('register.html')) {
-        window.location.href = "index1.html";
-        return;
+        // अगर रजिस्टर्ड नहीं है और 'register.html' पर नहीं है, तो भेजें
+        if (!isRegistered && !path.includes('register.html')) {
+            window.location.href = "register.html";
+            return;
+        } 
+        // अगर रजिस्टर्ड है और 'register.html' पर है, तो डैशबोर्ड भेजें
+        else if (isRegistered && path.includes('register.html')) {
+            window.location.href = "index1.html";
+            return;
+        }
+
+        // 3. UI अपडेट करें
+        updateNavbar(address);
+        showLogoutIcon(address);
+        
+        // 4. अगर डैशबोर्ड पेज पर है, तो डेटा लोड करें
+        if (path.includes('index1.html')) {
+            await window.fetchAllData(address);
+        }
+    } catch (err) {
+        console.error("Setup App Logic Error:", err);
     }
-
-    updateNavbar(address);
-    showLogoutIcon(address);
-    if (path.includes('index1.html')) fetchAllData(address);
 }
 window.fetchBlockchainHistory = async function(categories) {
     try {
@@ -398,53 +410,6 @@ window.fetchBlockchainHistory = async function(categories) {
     }
 }
 
-async function fetchAndDisplayData() {
-    console.log("Fetching Leadership Data...");
-    try {
-        if (!window.contract || !window.signer) {
-            console.error("Contract/Signer not ready");
-            return;
-        }
-
-        const userAddress = await window.signer.getAddress();
-        
-        // 1. Force Dashboard Sync
-        if (typeof window.fetchAllData === 'function') {
-            await window.fetchAllData(userAddress);
-        }
-
-        // 2. Contract se data layein
-        const stats = await window.contract.getUserStats(userAddress);
-        const teamBusinessWei = await window.contract.totalTeamBusiness(userAddress);
-        
-        // 3. Data format karein
-        const teamBusiness = parseFloat(ethers.utils.formatEther(teamBusinessWei));
-        const teamCount = parseInt(stats[5].toString());
-        const currentRank = stats[6]; // Contract ka rank string
-
-        console.log("Stats Loaded:", { teamCount, teamBusiness, currentRank });
-
-        // 4. UI Update (Leadership Specific)
-        if(document.getElementById('team-total-deposit')) 
-            document.getElementById('team-total-deposit').innerText = teamBusiness.toFixed(2);
-        if(document.getElementById('current-team-count')) 
-            document.getElementById('current-team-count').innerText = teamCount;
-        if(document.getElementById('rank-reward-available')) 
-            document.getElementById('rank-reward-available').innerText = parseFloat(ethers.utils.formatEther(stats[3])).toFixed(2);
-
-        // 5. Progress Bar Update
-        if(window.rankPlan) {
-            const rankIndex = window.rankPlan.findIndex(r => r.name.toLowerCase() === currentRank.toLowerCase());
-            const safeRankIndex = rankIndex === -1 ? 0 : rankIndex;
-            
-            if(typeof window.updateLeadershipUI === 'function') {
-                window.updateLeadershipUI(teamCount, teamBusiness, safeRankIndex);
-            }
-        }
-    } catch (error) {
-        console.error("Data Load Error:", error);
-    }
-}
 
 
 // --- UPDATED fetchAllData FUNCTION ---
