@@ -410,7 +410,53 @@ window.fetchBlockchainHistory = async function(categories) {
     }
 }
 
+/**
+ * मैट्रिक्स लेवल्स को डायनामिक तरीके से रेंडर करने का फंक्शन
+ * @param {number} phaseId - 1 से 6 के बीच फेज आईडी
+ */
+window.renderLevels = async function(phaseId) {
+    const container = document.getElementById('levels-container');
+    if (!container) return; // अगर HTML में कंटेनर नहीं है, तो रुक जाएं
+    
+    container.innerHTML = `<div class="col-span-full text-center py-4 text-xs">Loading Phase ${phaseId} levels...</div>`;
 
+    try {
+        let html = "";
+        
+        // कॉन्ट्रैक्ट से 5 लेवल्स के लिए लूप चलाएं
+        for (let level = 1; level <= 5; level++) {
+            // कॉन्ट्रैक्ट की phaseCosts मैपिंग से वैल्यू निकालें
+            const cost = await window.contract.phaseCosts(phaseId, level);
+            const costInUsdt = ethers.utils.formatEther(cost);
+            
+            html += `
+                <div class="bg-black/50 p-4 rounded-xl border border-white/10 text-center hover:border-yellow-500/50 transition-all">
+                    <p class="text-[10px] label-text mb-2 uppercase tracking-widest">Level ${level}</p>
+                    <h4 class="text-sm font-bold mb-3 text-white">${costInUsdt} USDT</h4>
+                    <button onclick="handleBuyLevel(${phaseId}, ${level}, '${costInUsdt}')" 
+                            class="btn-gold-pro w-full py-2 rounded-lg text-[10px] uppercase font-bold">
+                        Buy Level ${level}
+                    </button>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+    } catch (err) {
+        console.error("Render Levels Error:", err);
+        container.innerHTML = `<div class="col-span-full text-center py-4 text-red-500 text-xs">Error loading levels. Please try again.</div>`;
+    }
+};
+
+// पेज लोड होने पर इनिशियलाइजेशन
+window.addEventListener('load', () => {
+    // 2 सेकंड का डिले ताकि कॉन्ट्रैक्ट इंस्टेंस रेडी हो जाए
+    setTimeout(() => {
+        if(typeof window.renderLevels === 'function') {
+            window.renderLevels(1); // डिफ़ॉल्ट रूप से Phase 1 दिखाएं
+        }
+    }, 2000);
+});
 
 // --- UPDATED fetchAllData FUNCTION ---
 // --- ALL DATA SYNC FUNCTION ---
