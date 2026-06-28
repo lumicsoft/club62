@@ -30,7 +30,7 @@ const CONTRACT_ABI = [
     "function getIncomeHistory(address _user) external view returns (tuple(uint256 amount, uint256 timestamp, string incomeType, address fromUser, uint256 phaseId)[])",
     "function users(address) view returns (address referrer, address parent, address left, address right, uint256 directCount, uint256 paidDirectCount, uint256 directIncome, uint256 levelIncome, uint256 salaryIncome, uint256 totalEarned, uint256 lapsedIncome)",
     "function getUserDetails(address _user) external view returns (address referrer, uint256 directInc, uint256 levelInc, uint256 salaryInc, uint256 totalEarned, uint256 lapsed)",
-    "function isUserRegistered(address _user) external view returns (bool)"
+   "function isUserRegistered(address _user) external view returns (bool)"
 ];
 const ERC20_ABI = ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"];
 
