@@ -88,6 +88,22 @@
             </div>
         </div>
 
+        <!-- Matrix Levels Section -->
+        <div class="premium-card p-6 mt-6">
+            <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-yellow-500 tracking-widest">Select Phase & Buy Level</h3>
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <button onclick="renderLevels(1)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 1</button>
+                <button onclick="renderLevels(2)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 2</button>
+                <button onclick="renderLevels(3)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 3</button>
+                <button onclick="renderLevels(4)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 4</button>
+                <button onclick="renderLevels(5)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 5</button>
+                <button onclick="renderLevels(6)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 6</button>
+            </div>
+            <div id="levels-container" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <p class="text-gray-500 text-xs">Select a Phase to view levels...</p>
+            </div>
+        </div>
+
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
