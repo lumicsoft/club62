@@ -186,24 +186,44 @@ window.handleBuyLevel = async function(phaseId, level, costInEther) {
         }
     }
 };
+// --- K62 TO USDT SWAP ---
 window.handleSwapTokenToUSDT = async function(amountStr) {
+    if (!amountStr || amountStr <= 0) return alert("Enter valid amount");
     try {
         const amountInWei = ethers.utils.parseEther(amountStr);
-        const token = new ethers.Contract(K62_TOKEN_ADDRESS, ERC20_ABI, signer);
-        await (await token.approve(CONTRACT_ADDRESS, amountInWei)).wait();
+        const k62 = new ethers.Contract(K62_TOKEN_ADDRESS, ERC20_ABI, signer);
+        
+        // 1. Approve contract to spend K62
+        alert("Approving K62 tokens...");
+        await (await k62.approve(CONTRACT_ADDRESS, amountInWei)).wait();
+        
+        // 2. Swap
+        alert("Swapping...");
         await (await contract.swapTokenToUSDT(amountInWei)).wait();
-        alert("Swap Success!");
-    } catch (err) { alert(err.message); }
+        
+        alert("Swap Successful!");
+        location.reload();
+    } catch (err) { alert("Swap Failed: " + (err.reason || err.message)); }
 };
 
+// --- USDT TO K62 SWAP ---
 window.handleSwapUSDTToToken = async function(amountStr) {
+    if (!amountStr || amountStr <= 0) return alert("Enter valid amount");
     try {
         const amountInWei = ethers.utils.parseEther(amountStr);
         const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
+        
+        // 1. Approve contract to spend USDT
+        alert("Approving USDT...");
         await (await usdt.approve(CONTRACT_ADDRESS, amountInWei)).wait();
+        
+        // 2. Swap
+        alert("Swapping...");
         await (await contract.swapUSDTToToken(amountInWei)).wait();
-        alert("Swap Success!");
-    } catch (err) { alert(err.message); }
+        
+        alert("Swap Successful!");
+        location.reload();
+    } catch (err) { alert("Swap Failed: " + (err.reason || err.message)); }
 };
 
 window.handleWithdraw = async function() {
