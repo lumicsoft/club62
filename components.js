@@ -9,9 +9,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='index1.html'">
                     <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                        <i data-lucide="shield-check" class="text-black w-5 h-5"></i>
+                        <i data-lucide="target" class="text-black w-5 h-5"></i>
                     </div>
-                    <span class="text-lg font-black orbitron tracking-tighter uppercase text-white">BLACK<span class="text-yellow-500">STAX</span></span>
+                    <span class="text-lg font-black orbitron tracking-tighter uppercase text-white">CLUB<span class="text-yellow-500">62</span></span>
                 </div>
                 <div class="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
                     <button onclick="location.href='index1.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('index1.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">Dashboard</button>
@@ -69,11 +69,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-white/5 text-center mt-20">
             <div class="flex items-center justify-center gap-2 mb-6">
                 <div class="w-6 h-6 bg-yellow-500/20 rounded flex items-center justify-center">
-                    <i data-lucide="shield" class="text-yellow-500 w-3 h-3"></i>
+                    <i data-lucide="target" class="text-yellow-500 w-3 h-3"></i>
                 </div>
-                <span class="text-xs font-bold orbitron uppercase tracking-widest text-gray-500">BLACKSTAX Protocol</span>
+                <span class="text-xs font-bold orbitron uppercase tracking-widest text-gray-500">CLUB62 Protocol</span>
             </div>
-            <p class="text-[10px] text-gray-600 uppercase tracking-[0.2em]">© 2026 Blackstax. All Rights Reserved.</p>
+            <p class="text-[10px] text-gray-600 uppercase tracking-[0.2em]">© 2026 Club62. All Rights Reserved.</p>
         </footer>
     `;
 
