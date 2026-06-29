@@ -124,35 +124,45 @@ window.handleActivatePhase = async function(phaseId) {
 window.handleBuyLevel = async function(phaseId, level, costInEther) {
     try {
         const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
         
-        // 1. अमाउंट को Wei में कन्वर्ट करें
         const costPerLevel = ethers.utils.parseEther(costInEther.toString());
-        
-        // 2. कॉन्ट्रैक्ट 2x पेमेंट मांगता है (Logic: cost * 2)
-        const payment = costPerLevel.mul(2); 
+        const payment = costPerLevel.mul(2); // 2x Payment
 
-        // 3. अप्रूवल चेक करें
         const userAddress = await signer.getAddress();
         const allowance = await usdt.allowance(userAddress, CONTRACT_ADDRESS);
         
-        // 4. अगर अलाउंस कम है, तो Approve करें
+        // अगर अलाउंस कम है, तो अप्रूवल कॉल ट्रिगर करें
         if (allowance.lt(payment)) {
-            alert("Please approve USDT for this transaction (2x Amount required)");
-            const approveTx = await usdt.approve(CONTRACT_ADDRESS, payment);
-            await approveTx.wait();
+            console.log("Requesting Approval...");
+            // gasLimit को बढ़ाकर सेट करें ताकि पॉप-अप पक्का आए
+            const approveTx = await usdt.approve(CONTRACT_ADDRESS, payment, {
+                gasLimit: 100000 
+            });
+            
+            alert("Approve transaction sent. Please wait for confirmation.");
+            await approveTx.wait(); // यहाँ पॉप-अप आना चाहिए
+            console.log("Approval Confirmed!");
         }
 
-        // 5. अब लेवल खरीदें
-        // कॉन्ट्रैक्ट फंक्शन को कॉल करें
-        const tx = await contract.buyMatrixLevel(phaseId, level);
-        await tx.wait();
+        // लेवल खरीदें
+        console.log("Buying Level...");
+        const tx = await contract.buyMatrixLevel(phaseId, level, {
+            gasLimit: 500000 // कॉम्प्लेक्स फंक्शन के लिए पर्याप्त गैस
+        });
         
+        await tx.wait();
         alert("Level Purchased Successfully!");
         location.reload();
         
     } catch (err) { 
         console.error(err);
-        alert("Transaction Failed: " + (err.reason || err.message)); 
+        // अगर यूजर कैंसिल करता है तो उसका एरर
+        if (err.code === 4001) {
+            alert("Transaction cancelled by user.");
+        } else {
+            alert("Transaction Failed: " + (err.reason || err.message));
+        }
     }
 };
 window.handleSwapTokenToUSDT = async function(amountStr) {
