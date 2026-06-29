@@ -530,6 +530,14 @@ window.getUserTreeData = async function(address) {
         right: treeData.right
     };
 };
+window.getTeamByLevel = async function(address, level) {
+    try {
+        return await window.contract.getTeamByLevel(address, level);
+    } catch (err) {
+        console.error("Error calling getTeamByLevel:", err);
+        return [];
+    }
+};
 // --- UPDATED TOOLTIP DATA FETCHING ---
 window.getUserShortDetails = async function(address) {
     if (address === "0x0000000000000000000000000000000000000000") return null;
