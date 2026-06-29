@@ -471,7 +471,12 @@ window.addEventListener('DOMContentLoaded', () => {
         window.renderLevels(1); 
     }
 });
-
+// यह फंक्शन कॉल करें जब डेटा लोड हो
+window.updateLiveRate = async function() {
+    const data = await contract.getLiquidityDetails(); // आपके कॉन्ट्रैक्ट का फंक्शन
+    const liveRate = ethers.utils.formatEther(data.liveRate);
+    document.getElementById('live-rate-display').innerText = parseFloat(liveRate).toFixed(4);
+};
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
