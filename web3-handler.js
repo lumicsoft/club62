@@ -529,7 +529,29 @@ window.getUserTreeData = async function(address) {
         right: treeData.right
     };
 };
-
+// --- UPDATED TOOLTIP DATA FETCHING ---
+window.getUserShortDetails = async function(address) {
+    if (address === "0x0000000000000000000000000000000000000000") return null;
+    
+    try {
+        // कॉन्ट्रैक्ट से यूजर का पूरा डेटा लाएं
+        const u = await window.contract.users(address);
+        
+        // डेटा को readable फॉर्मेट में कन्वर्ट करें
+        return {
+            address: address,
+            directCount: u.directCount.toString(),
+            paidDirectCount: u.paidDirectCount.toString(),
+            directIncome: parseFloat(ethers.utils.formatUnits(u.directIncome, 18)).toFixed(2),
+            levelIncome: parseFloat(ethers.utils.formatUnits(u.levelIncome, 18)).toFixed(2),
+            salaryIncome: parseFloat(ethers.utils.formatUnits(u.salaryIncome, 18)).toFixed(2),
+            totalEarned: parseFloat(ethers.utils.formatUnits(u.totalEarned, 18)).toFixed(2)
+        };
+    } catch (e) {
+        console.error("Tooltip Data Error:", e);
+        return null;
+    }
+};
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
