@@ -3,46 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club62 - Dashboard</title>
+    <title>Club62 - Network Tree</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .status-badge { background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; border: 1px solid rgba(34, 197, 94, 0.3); }
-        .progress-container { background: rgba(255,255,255,0.05); height: 6px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        .progress-bar-node { background: linear-gradient(90deg, #FFD700, #B8860B); height: 100%; transition: width 1s ease-in-out; }
-        .tree-node { border: 1px solid rgba(234, 179, 8, 0.4); background: rgba(0,0,0,0.6); padding: 12px; border-radius: 12px; min-width: 130px; text-align: center; cursor: pointer; transition: 0.3s; }
+        body { background-color: #050505; color: white; font-family: sans-serif; }
+        .tree-node { 
+            border: 1px solid rgba(234, 179, 8, 0.4); 
+            background: rgba(0,0,0,0.8); 
+            padding: 12px; 
+            border-radius: 12px; 
+            min-width: 120px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
         .tree-node:hover { background: rgba(234, 179, 8, 0.1); border-color: #eab308; }
+        .child-wrapper { display: flex; gap: 20px; margin-top: 20px; }
     </style>
 </head>
-<body class="p-4 md:p-10 bg-[#050505] text-white">
+<body class="p-4 md:p-10">
 
-    <main class="max-w-7xl mx-auto space-y-8 pt-10">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-black orbitron italic uppercase tracking-tighter">Active <span class="text-yellow-500">Deposits</span></h1>
-                <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">Mining Node Performance</p>
-            </div>
-            <button onclick="loadActiveDeposits()" class="bg-white/5 border border-white/10 p-3 rounded-xl hover:bg-white/10 transition-all"><i data-lucide="refresh-cw" class="w-5 h-5 text-yellow-500"></i></button>
-        </div>
-
-        <div id="deposits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="col-span-full text-center py-10"><div class="animate-spin text-yellow-500 inline-block"><i data-lucide="refresh-cw" class="w-10 h-10"></i></div></div>
-        </div>
-
-        <div class="premium-card p-8 border border-white/5 mt-10">
-            <h2 class="text-xl font-black orbitron mb-8 uppercase text-blue-500">Interactive Network Tree</h2>
-            <div id="tree-root" class="flex flex-col items-center gap-4 overflow-x-auto pb-10">
-                <div id="root-node" class="tree-node border-blue-500" onclick="expandNode(this, localStorage.getItem('userAddress'))">
-                    <p class="text-[10px] text-blue-400 font-mono">My Wallet</p>
-                    <p class="text-[8px] text-gray-500">Click to expand</p>
-                </div>
+    <main class="max-w-7xl mx-auto">
+        <h2 class="text-2xl font-black orbitron mb-10 uppercase text-blue-500 text-center">My Network Tree</h2>
+        
+        <div id="tree-root" class="flex flex-col items-center gap-4 overflow-x-auto pb-20">
+            <div id="root-node" class="tree-node border-blue-500" 
+                 onclick="expandNode(this, localStorage.getItem('userAddress'))">
+                <p class="text-[10px] text-blue-400 font-mono">My Wallet</p>
+                <p class="text-[8px] text-gray-500">Click to expand</p>
             </div>
         </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <script src="components.js"></script>
     <script src="web3-handler.js"></script>
     <script>
         lucide.createIcons();
@@ -50,35 +45,32 @@
         async function expandNode(element, address) {
             if (!address || address === "0x0000000000000000000000000000000000000000") return;
             
-            // अगर पहले से खुले हैं तो उन्हें बंद करें
+            // Toggle logic: अगर पहले से खुले हैं तो हटा दें
             if (element.nextElementSibling && element.nextElementSibling.classList.contains('child-wrapper')) {
                 element.nextElementSibling.remove();
                 return;
             }
 
-            const children = await window.contract.getUserTree(address);
-            let html = `<div class="child-wrapper flex gap-8 mt-4 animate-in fade-in zoom-in duration-300">`;
+            try {
+                const children = await window.contract.getUserTree(address);
+                let html = `<div class="child-wrapper animate-in fade-in zoom-in duration-300">`;
 
-            [children.left, children.right].forEach(childAddr => {
-                const hasChild = childAddr !== "0x0000000000000000000000000000000000000000";
-                html += `
-                    <div class="flex flex-col items-center">
-                        <div class="tree-node ${hasChild ? '' : 'opacity-50'}" onclick="expandNode(this, '${childAddr}')">
-                            <p class="text-[9px] font-mono">${hasChild ? childAddr.substring(0,8) + '...' : 'EMPTY'}</p>
-                        </div>
-                    </div>`;
-            });
-            
-            html += `</div>`;
-            element.insertAdjacentHTML('afterend', html);
-        }
-
-        window.addEventListener('load', async () => {
-            await new Promise(r => setTimeout(r, 2000));
-            if(window.signer) {
-                loadActiveDeposits();
+                [children.left, children.right].forEach(childAddr => {
+                    const hasChild = childAddr !== "0x0000000000000000000000000000000000000000";
+                    html += `
+                        <div class="flex flex-col items-center">
+                            <div class="tree-node ${hasChild ? '' : 'opacity-40'}" onclick="expandNode(this, '${childAddr}')">
+                                <p class="text-[9px] font-mono">${hasChild ? childAddr.substring(0,8) + '...' : 'EMPTY'}</p>
+                            </div>
+                        </div>`;
+                });
+                
+                html += `</div>`;
+                element.insertAdjacentHTML('afterend', html);
+            } catch (err) {
+                console.error("Error fetching tree:", err);
             }
-        });
+        }
     </script>
 </body>
 </html>
