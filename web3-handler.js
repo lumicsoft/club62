@@ -552,6 +552,7 @@ window.getUserShortDetails = async function(address) {
         return null;
     }
 };
+
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
