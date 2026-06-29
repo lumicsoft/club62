@@ -83,20 +83,42 @@
         });
 
         // 3. टूलटिप फंक्शन
-        async function showDetails(el, address) {
-            if(address === "0x0000000000000000000000000000000000000000") return;
-            const details = await window.getUserShortDetails(address);
-            if (!details) return;
-            
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.innerHTML = `Address: ${address.substring(0,10)}...<br>Directs: ${details.directCount}`;
-            document.body.appendChild(tooltip);
-            
-            el.onmousemove = (e) => { tooltip.style.left = (e.pageX + 10) + 'px'; tooltip.style.top = (e.pageY + 10) + 'px'; };
-            el.onmouseleave = () => tooltip.remove();
-            tooltip.style.display = 'block';
-        }
+        // 3. टूलटिप फंक्शन (Mouse Leave पर तुरंत गायब होगा)
+async function showDetails(el, address) {
+    if (!address || address === "0x0000000000000000000000000000000000000000") return;
+    
+    // पुरानी टूलटिप्स को साफ़ करें
+    document.querySelectorAll('.tooltip').forEach(t => t.remove());
+
+    const details = await window.getUserShortDetails(address);
+    if (!details) return;
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.style.display = 'block'; // दिखाना शुरू करें
+    tooltip.innerHTML = `
+        <div class="space-y-1">
+            <p class="text-blue-400 font-mono text-[9px] border-b border-blue-800 pb-1">${address.substring(0,10)}...</p>
+            <p>Directs: <span class="text-white">${details.directCount}</span></p>
+            <p>Paid Directs: <span class="text-white">${details.paidDirectCount}</span></p>
+            <p>Direct Income: <span class="text-green-400">${details.directIncome}</span></p>
+            <p>Level Income: <span class="text-purple-400">${details.levelIncome}</span></p>
+            <p>Total Earned: <span class="text-yellow-400">${details.totalEarned}</span></p>
+        </div>
+    `;
+    document.body.appendChild(tooltip);
+    
+    // माउस मूव होने पर टूलटिप को फॉलो करवाएं
+    el.onmousemove = (e) => { 
+        tooltip.style.left = (e.pageX + 15) + 'px'; 
+        tooltip.style.top = (e.pageY + 15) + 'px'; 
+    };
+
+    // माउस हटते ही तुरंत गायब करें
+    el.onmouseleave = () => {
+        tooltip.remove();
+    };
+}
     </script>
 </body>
 </html>
