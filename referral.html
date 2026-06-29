@@ -20,19 +20,19 @@
                 <h3 class="amount-text orbitron" id="direct-count">0</h3>
             </div></div>
             <div class="premium-card"><div class="inner-content stat-box">
-                <div class="flex items-center gap-3"><i data-lucide="network" class="text-emerald-500 w-6 h-6"></i><p class="label-text">Total Team</p></div>
-                <h3 class="amount-text orbitron" id="team-count">0</h3>
+                <div class="flex items-center gap-3"><i data-lucide="network" class="text-emerald-500 w-6 h-6"></i><p class="label-text">Paid Directs</p></div>
+                <h3 class="amount-text orbitron" id="paid-direct-count">0</h3>
             </div></div>
             <div class="premium-card"><div class="inner-content stat-box">
                 <div class="flex items-center gap-3"><i data-lucide="banknote" class="text-yellow-600 w-6 h-6"></i><p class="label-text">Total Earned</p></div>
                 <h3 class="amount-text orbitron" id="total-earned">0.00</h3>
             </div></div>
             <div class="premium-card"><div class="inner-content stat-box">
-                <div class="flex items-center gap-3"><i data-lucide="user-plus" class="text-yellow-500 w-6 h-6"></i><p class="label-text">Ref Bonus</p></div>
-                <h3 class="amount-text orbitron" id="referral-earnings">0.00</h3>
+                <div class="flex items-center gap-3"><i data-lucide="user-plus" class="text-yellow-500 w-6 h-6"></i><p class="label-text">Direct Inc.</p></div>
+                <h3 class="amount-text orbitron" id="direct-earnings">0.00</h3>
             </div></div>
             <div class="premium-card"><div class="inner-content stat-box">
-                <div class="flex items-center gap-3"><i data-lucide="layers" class="text-purple-500 w-6 h-6"></i><p class="label-text">Level Income</p></div>
+                <div class="flex items-center gap-3"><i data-lucide="layers" class="text-purple-500 w-6 h-6"></i><p class="label-text">Level Inc.</p></div>
                 <h3 class="amount-text orbitron" id="level-earnings">0.00</h3>
             </div></div>
         </div>
@@ -43,14 +43,13 @@
                     <h3 class="text-sm font-black orbitron uppercase italic text-yellow-500">Team Report</h3>
                     <select id="levelSelect" onchange="loadLevelData(this.value)" class="bg-black/50 text-yellow-500 font-black orbitron text-xs p-2 rounded-lg border border-white/10 outline-none">
                         <option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option>
-                        <option value="4">Level 4</option><option value="5">Level 5</option><option value="6">Level 6</option>
-                        <option value="7">Level 7</option><option value="8">Level 8</option><option value="9">Level 9</option><option value="10">Level 10</option>
+                        <option value="4">Level 4</option><option value="5">Level 5</option>
                     </select>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="luxury-table w-full">
-                        <thead><tr class="text-left text-[10px] text-gray-500 uppercase"><th class="p-4">USER ADDRESS</th><th class="p-4">LEVEL</th><th class="p-4">TOTAL STAKE</th><th class="p-4">STATUS</th></tr></thead>
-                        <tbody id="team-table-body" class="text-gray-400"><tr><td colspan="4" class="p-10 text-center italic text-gray-600">Syncing Network...</td></tr></tbody>
+                        <thead><tr class="text-left text-[10px] text-gray-500 uppercase"><th class="p-4">USER ADDRESS</th><th class="p-4">LEVEL</th><th class="p-4">STATUS</th></tr></thead>
+                        <tbody id="team-table-body" class="text-gray-400"></tbody>
                     </table>
                 </div>
             </div>
@@ -64,57 +63,44 @@
     <script>
         lucide.createIcons();
 
-        // 1. `format` hata diya yahan se kyunki web3-handler mein define hai
         async function loadReferralData() {
-            if (typeof window.contract === 'undefined') {
-                setTimeout(loadReferralData, 1000); return;
-            }
+            if (typeof window.contract === 'undefined') { setTimeout(loadReferralData, 1000); return; }
             try {
                 const address = await window.signer.getAddress();
-                const user = await window.contract.users(address);
-                const stats = await window.contract.getUserStats(address); 
-
-                document.getElementById('direct-count').innerText = user.activeDirects.toString();
-                document.getElementById('team-count').innerText = stats[5].toString();
-                document.getElementById('total-earned').innerText = format(user.totalIncome);
-                document.getElementById('referral-earnings').innerText = format(stats[2]); 
-                document.getElementById('level-earnings').innerText = format(stats[1]);
+                // आपके कॉन्ट्रैक्ट के getUserDetails फंक्शन का उपयोग
+                const d = await window.contract.getUserDetails(address);
+                
+                document.getElementById('direct-count').innerText = d.directInc > 0 ? "..." : "Check Tree"; // कॉन्ट्रैक्ट में डायरेक्ट काउंट मैपिंग से लें
+                document.getElementById('total-earned').innerText = format(d.totalEarned);
+                document.getElementById('direct-earnings').innerText = format(d.directInc); 
+                document.getElementById('level-earnings').innerText = format(d.levelInc);
                 
                 loadLevelData(1);
             } catch (err) { console.error("Referral Error:", err); }
         }
 
         async function loadLevelData(level) {
-    const tableBody = document.getElementById('team-table-body');
-    tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-yellow-500">SYNCING LEVEL ${level}...</td></tr>`;
-    
-    try {
-        const address = await window.signer.getAddress();
-        
-        // Yahan 'level' ko pass karna zaroori hai kyunki ab contract 2 arguments leta hai
-        const [wallets, stakes] = await window.contract.getTeamByLevel(address, level);
-        
-        if (!wallets || wallets.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-gray-600">No members at Level ${level}</td></tr>`;
-            return;
+            const tableBody = document.getElementById('team-table-body');
+            tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-yellow-500">Syncing Level ${level}...</td></tr>`;
+            try {
+                const address = await window.signer.getAddress();
+                const wallets = await window.contract.getTeamByLevel(address, level); // नया अपडेटेड फंक्शन
+                
+                if (!wallets || wallets.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="3" class="p-10 text-center text-gray-600">No members found</td></tr>`;
+                    return;
+                }
+                let html = '';
+                wallets.forEach(w => {
+                    html += `<tr>
+                        <td class="p-4 font-mono text-yellow-500">${w.substring(0,6)}...${w.substring(38)}</td>
+                        <td class="p-4">Level ${level}</td>
+                        <td class="p-4"><span class="status-badge text-green-500">ACTIVE</span></td>
+                    </tr>`;
+                });
+                tableBody.innerHTML = html;
+            } catch (err) { tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error Loading Data</td></tr>`; }
         }
-
-        let html = '';
-        for (let i = 0; i < wallets.length; i++) {
-            const activeAmt = parseFloat(ethers.utils.formatUnits(stakes[i], 18));
-            html += `<tr>
-                <td class="p-4 font-mono text-yellow-500">${wallets[i].substring(0,6)}...${wallets[i].substring(38)}</td>
-                <td class="p-4">Lvl ${level}</td>
-                <td class="p-4">$${activeAmt.toLocaleString()}</td>
-                <td class="p-4">${activeAmt > 0 ? '<span class="text-green-500">ACTIVE</span>' : '<span class="text-red-500">INACTIVE</span>'}</td>
-            </tr>`;
-        }
-        tableBody.innerHTML = html;
-    } catch (err) { 
-        console.error("Error loading level data:", err);
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Error Loading Level ${level}</td></tr>`; 
-    }
-}
 
         window.addEventListener('load', () => setTimeout(loadReferralData, 1500));
     </script>
