@@ -10,57 +10,71 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <link rel="stylesheet" href="style1.css">
+    <style>
+        .live-rate-card {
+            background: linear-gradient(145deg, #0f172a, #020617);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .glow-effect { box-shadow: 0 0 15px rgba(234, 179, 8, 0.15); }
+    </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-10 bg-[#050505]">
 
     <main class="max-w-7xl mx-auto space-y-6">
         
-        <!-- User Header Section -->
-        <div class="premium-card">
-            <div class="inner-content !block">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <div class="info-row">
-                            <div class="flex items-center gap-3"><i data-lucide="wallet" class="text-yellow-600 w-4 h-4"></i><span class="label-text">Address:</span></div>
-                            <span id="user-address" class="text-xs font-mono text-blue-300 truncate">loading</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="premium-card live-rate-card glow-effect col-span-1 md:col-span-3 lg:col-span-1">
+                <div class="inner-content flex items-center justify-between p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-yellow-500/10 p-3 rounded-full border border-yellow-500/20">
+                            <i data-lucide="circle-dollar-sign" class="text-yellow-500 w-8 h-8"></i>
                         </div>
-                        <div class="info-row">
-                            <div class="flex items-center gap-3"><i data-lucide="user" class="text-yellow-600 w-4 h-4"></i><span class="label-text">Referrer:</span></div>
-                            <span id="referrer-address" class="text-sm font-bold uppercase orbitron">loading</span>
+                        <div>
+                            <p class="label-text text-[10px] uppercase tracking-widest">K62 Token Live</p>
+                            <h4 class="text-xl font-bold text-white orbitron">K62 / USDT</h4>
                         </div>
                     </div>
-                    <div class="flex flex-col justify-center bg-black/40 p-5 rounded-2xl border border-white/5">
-                        <p class="label-text text-center mb-3">Invitation Link</p>
-                        <div class="flex items-center bg-black border border-white/10 rounded-xl p-1.5 pl-4">
-                            <input id="refURL" type="text" readonly value="loading" class="bg-transparent border-none outline-none w-full text-xs font-mono text-gray-400">
-                            <button onclick="copyLink()" class="btn-gold-pro px-6 py-2 rounded-lg text-[10px]">Copy</button>
+                    <div class="text-right">
+                        <p class="text-2xl font-black text-yellow-500 orbitron" id="live-rate-display">1.601</p>
+                        <span class="text-[10px] text-blue-400">Current Market Rate</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-span-1 md:col-span-2 premium-card">
+                <div class="inner-content !block">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <div class="info-row">
+                                <div class="flex items-center gap-3"><i data-lucide="wallet" class="text-yellow-600 w-4 h-4"></i><span class="label-text">Address:</span></div>
+                                <span id="user-address" class="text-xs font-mono text-blue-300 truncate">loading</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="flex items-center gap-3"><i data-lucide="user" class="text-yellow-600 w-4 h-4"></i><span class="label-text">Referrer:</span></div>
+                                <span id="referrer-address" class="text-sm font-bold uppercase orbitron">loading</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center bg-black/40 p-5 rounded-2xl border border-white/5">
+                            <p class="label-text text-center mb-3">Invitation Link</p>
+                            <div class="flex items-center bg-black border border-white/10 rounded-xl p-1.5 pl-4">
+                                <input id="refURL" type="text" readonly value="loading" class="bg-transparent border-none outline-none w-full text-xs font-mono text-gray-400">
+                                <button onclick="copyLink()" class="btn-gold-pro px-6 py-2 rounded-lg text-[10px]">Copy</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Income Overview Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div class="premium-card"><div class="inner-content stat-box">
-                <p class="label-text">Direct Income</p>
-                <h3 class="amount-text orbitron"><span id="direct-income">0.00</span></h3>
-            </div></div>
-            <div class="premium-card"><div class="inner-content stat-box">
-                <p class="label-text">Level Income</p>
-                <h3 class="amount-text orbitron"><span id="level-income">0.00</span></h3>
-            </div></div>
-            <div class="premium-card"><div class="inner-content stat-box">
-                <p class="label-text">Salary Income</p>
-                <h3 class="amount-text orbitron"><span id="salary-income">0.00</span></h3>
-            </div></div>
-            <div class="premium-card"><div class="inner-content stat-box">
-                <p class="label-text">Total Earned</p>
-                <h3 class="amount-text orbitron text-yellow-500"><span id="total-earned">0.00</span></h3>
-            </div></div>
+            <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Direct Income</p><h3 class="amount-text orbitron"><span id="direct-income">0.00</span></h3></div></div>
+            <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Level Income</p><h3 class="amount-text orbitron"><span id="level-income">0.00</span></h3></div></div>
+            <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Salary Income</p><h3 class="amount-text orbitron"><span id="salary-income">0.00</span></h3></div></div>
+            <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Total Earned</p><h3 class="amount-text orbitron text-yellow-500"><span id="total-earned">0.00</span></h3></div></div>
         </div>
 
-        <!-- Stock & Withdraw Section -->
         <div class="premium-card p-8 border border-yellow-500/20">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
@@ -75,7 +89,6 @@
             </div>
         </div>
 
-        <!-- Phase Activation -->
         <div class="premium-card p-6">
             <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-yellow-500 tracking-widest">Activate Phases</h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
@@ -88,7 +101,6 @@
             </div>
         </div>
 
-        <!-- Matrix Levels Section -->
         <div class="premium-card p-6 mt-6">
             <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-yellow-500 tracking-widest">Select Phase & Buy Level</h3>
             <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
