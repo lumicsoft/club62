@@ -68,6 +68,26 @@
             </div>
         </div>
 
+        <div class="premium-card p-6 border border-blue-500/20">
+            <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-blue-500 tracking-widest">Instant Token Swap</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-black/40 p-4 rounded-xl border border-white/5">
+                    <p class="label-text mb-2">Sell K62 (Get USDT)</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="swap-token-amt" placeholder="0.00 K62" class="bg-black border border-white/10 rounded-lg px-3 py-2 w-full text-white text-xs">
+                        <button onclick="handleSwapTokenToUSDT(document.getElementById('swap-token-amt').value)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">SWAP</button>
+                    </div>
+                </div>
+                <div class="bg-black/40 p-4 rounded-xl border border-white/5">
+                    <p class="label-text mb-2">Buy K62 (Pay USDT)</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="swap-usdt-amt" placeholder="0.00 USDT" class="bg-black border border-white/10 rounded-lg px-3 py-2 w-full text-white text-xs">
+                        <button onclick="handleSwapUSDTToToken(document.getElementById('swap-usdt-amt').value)" class="btn-gold-pro px-4 py-2 rounded-lg text-[10px]">SWAP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Direct Income</p><h3 class="amount-text orbitron"><span id="direct-income">0.00</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><p class="label-text">Level Income</p><h3 class="amount-text orbitron"><span id="level-income">0.00</span></h3></div></div>
