@@ -123,23 +123,27 @@ window.handleActivatePhase = async function(phaseId) {
 };
 window.handleBuyLevel = async function(phaseId, level, costInEther) {
     try {
-        // 1. USDT कॉन्ट्रैक्ट का इंस्टेंस बनाएं
         const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
         
-        // 2. अमाउंट को Wei में कन्वर्ट करें
-        const amountInWei = ethers.utils.parseEther(costInEther.toString());
-
-        // 3. चेक करें कि कितना अप्रूव्ड है (Optional, but better UX)
-        const allowance = await usdt.allowance(await signer.getAddress(), CONTRACT_ADDRESS);
+        // 1. अमाउंट को Wei में कन्वर्ट करें
+        const costPerLevel = ethers.utils.parseEther(costInEther.toString());
         
-        // 4. अगर कम है, तो पहले Approve करें
-        if (allowance.lt(amountInWei)) {
-            alert("Please approve USDT for this transaction");
-            const approveTx = await usdt.approve(CONTRACT_ADDRESS, amountInWei);
+        // 2. कॉन्ट्रैक्ट 2x पेमेंट मांगता है (Logic: cost * 2)
+        const payment = costPerLevel.mul(2); 
+
+        // 3. अप्रूवल चेक करें
+        const userAddress = await signer.getAddress();
+        const allowance = await usdt.allowance(userAddress, CONTRACT_ADDRESS);
+        
+        // 4. अगर अलाउंस कम है, तो Approve करें
+        if (allowance.lt(payment)) {
+            alert("Please approve USDT for this transaction (2x Amount required)");
+            const approveTx = await usdt.approve(CONTRACT_ADDRESS, payment);
             await approveTx.wait();
         }
 
         // 5. अब लेवल खरीदें
+        // कॉन्ट्रैक्ट फंक्शन को कॉल करें
         const tx = await contract.buyMatrixLevel(phaseId, level);
         await tx.wait();
         
@@ -151,7 +155,6 @@ window.handleBuyLevel = async function(phaseId, level, costInEther) {
         alert("Transaction Failed: " + (err.reason || err.message)); 
     }
 };
-
 window.handleSwapTokenToUSDT = async function(amountStr) {
     try {
         const amountInWei = ethers.utils.parseEther(amountStr);
