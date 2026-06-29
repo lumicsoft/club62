@@ -70,13 +70,16 @@ async function getWalletProvider() {
     return null;
 }
 
-async function init() {
+aasync function init() {
     checkReferralURL();
 
     try {
         const ethereumProvider = await getWalletProvider();
         if (!ethereumProvider) {
             console.error("No wallet detected");
+            // अगर वॉलेट नहीं मिला, तो भी Read-only मोड के लिए कॉन्ट्रैक्ट सेट करें
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/"));
+            window.contract = contract;
             return;
         }
 
@@ -88,32 +91,35 @@ async function init() {
             try {
                 await ethereumProvider.request({
                     method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x61' }], // 97 = 0x61
+                    params: [{ chainId: '0x61' }], 
                 });
                 window.location.reload();
                 return; 
             } catch (switchError) {
-                console.warn("User denied network switch or network not added.");
+                console.warn("User denied network switch.");
             }
         }
 
-        // Read-only contract instance
-        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-        window.contract = contract;
+        // Initialize Contract
+        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider.getSigner());
+        window.contract = contract; 
 
         const accounts = await ethereumProvider.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
             signer = provider.getSigner();
             window.signer = signer;
-            
-            // Signer के साथ contract instance
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-            window.contract = contract; 
-            
             await setupApp(accounts[0]);
         }
 
-        // Listeners (ethereumProvider का उपयोग करें window.ethereum के बजाय)
+        // --- LIVE DATA UPDATES ---
+        // पेज लोड होते ही पहली बार रेट कॉल करें
+        if (typeof window.updateLiveRate === 'function') {
+            window.updateLiveRate();
+            // हर 10 सेकंड में रेट अपडेट करें
+            setInterval(window.updateLiveRate, 10000);
+        }
+
+        // Listeners
         ethereumProvider.on('chainChanged', () => window.location.reload());
         ethereumProvider.on('accountsChanged', (accs) => {
             if (accs.length === 0) localStorage.removeItem('userAddress');
