@@ -424,18 +424,29 @@ window.fetchBlockchainHistory = async function(categories) {
     }
 }
 
+// कीमतों को JS में ही स्टोर करें (ताकि कॉन्ट्रैक्ट को बार-बार कॉल न करना पड़े)
+const STATIC_PHASE_COSTS = {
+    1: [0, "2", "4", "8", "16", "32"],
+    2: [0, "10", "20", "40", "80", "160"],
+    3: [0, "50", "100", "200", "400", "800"],
+    4: [0, "200", "400", "800", "1600", "3200"],
+    5: [0, "500", "1000", "2000", "4000", "8000"],
+    6: [0, "2000", "4000", "8000", "16000", "32000"]
+};
+
 window.renderLevels = async function(phaseId) {
     const container = document.getElementById('levels-container');
     if (!container) return;
     
-    container.innerHTML = `<p class="text-xs text-yellow-500">Loading Levels...</p>`;
-
+    // तुरंत रेंडर करें, लोडिंग टेक्स्ट की जरूरत नहीं
     try {
         let html = "";
+        const costs = STATIC_PHASE_COSTS[phaseId];
+        
+        if (!costs) throw new Error("Invalid Phase ID");
+
         for(let level = 1; level <= 5; level++) {
-            // अब सीधे नए फंक्शन का उपयोग करें
-            const cost = await window.contract.getLevelCost(phaseId, level);
-            const costInUsdt = ethers.utils.formatEther(cost);
+            const costInUsdt = costs[level]; // सीधे एरे से कीमत उठाएं
             
             html += `
                 <div class="bg-black/50 p-4 rounded-xl border border-white/10 text-center">
@@ -454,7 +465,6 @@ window.renderLevels = async function(phaseId) {
         container.innerHTML = `<p class="text-xs text-red-500">Failed to load levels.</p>`;
     }
 };
-
 // पेज लोड होते ही Phase 1 दिखाएं
 window.addEventListener('load', () => {
     setTimeout(() => {
