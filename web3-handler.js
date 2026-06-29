@@ -465,16 +465,13 @@ window.renderLevels = async function(phaseId) {
         container.innerHTML = `<p class="text-xs text-red-500">Failed to load levels.</p>`;
     }
 };
-// पेज लोड होते ही Phase 1 दिखाएं
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if(typeof window.renderLevels === 'function') {
-            window.renderLevels(1); 
-        }
-    }, 2000);
+// पेज लोड होते ही तुरंत रेंडर करें (बिना किसी देरी के)
+window.addEventListener('DOMContentLoaded', () => {
+    if(typeof window.renderLevels === 'function') {
+        window.renderLevels(1); 
+    }
 });
-// --- UPDATED fetchAllData FUNCTION ---
-// --- ALL DATA SYNC FUNCTION ---
+
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
