@@ -520,22 +520,16 @@ window.updateLiveRate = async function() {
 };
 // --- TREE DATA FETCHING FUNCTION ---
 // यह फंक्शन क्लिक करने पर सीधे स्मार्ट कॉन्ट्रैक्ट से 'left' और 'right' एड्रेस लाएगा
-window.getUserTree = async function(address) {
-    try {
-        if (!window.contract) return { left: "0x0000000000000000000000000000000000000000", right: "0x0000000000000000000000000000000000000000" };
-        const tree = await window.contract.getUserTree(address);
-        return {
-            left: tree.left,
-            right: tree.right
-        };
-    } catch (e) {
-        console.error("Tree Fetch Error:", e);
-        return { 
-            left: "0x0000000000000000000000000000000000000000", 
-            right: "0x0000000000000000000000000000000000000000" 
-        };
-    }
+window.getUserTreeData = async function(address) {
+    // कॉन्ट्रैक्ट से डेटा लाने का सही तरीका
+    const treeData = await window.contract.getUserTree(address);
+    return {
+        address: address,
+        left: treeData.left,
+        right: treeData.right
+    };
 };
+
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
