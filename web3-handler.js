@@ -59,57 +59,72 @@ async function checkReferralURL() {
     }
 }
 
+async function getWalletProvider() {
+    // Edge में MetaMask या अन्य वॉलेट को प्रायोरिटी देने के लिए
+    if (window.ethereum) {
+        if (window.ethereum.providers) {
+            return window.ethereum.providers.find((p) => p.isMetaMask) || window.ethereum;
+        }
+        return window.ethereum;
+    }
+    return null;
+}
+
 async function init() {
     checkReferralURL();
 
     try {
-        if (window.ethereum) {
-            provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-            
-            // --- AUTO NETWORK SWITCH LOGIC ---
-            const network = await provider.getNetwork();
-            if (network.chainId !== TESTNET_CHAIN_ID) {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x61' }], // 97 = 0x61
-                    });
-                    window.location.reload();
-                    return; 
-                } catch (switchError) {
-                    console.warn("User denied network switch or network not added.");
-                }
-            }
-
-            // Read-only contract instance
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-            window.contract = contract;
-
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) {
-                signer = provider.getSigner();
-                window.signer = signer; // <--- Yeh line zaroori hai
-                
-                // Signer ke sath contract instance
-                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-                window.contract = contract; // <--- Global contract update
-                
-                await setupApp(accounts[0]);
-            }
-
-            // Listeners
-            window.ethereum.on('chainChanged', () => window.location.reload());
-            window.ethereum.on('accountsChanged', (accs) => {
-                if (accs.length === 0) localStorage.removeItem('userAddress');
-                else localStorage.setItem('userAddress', accs[0]);
-                window.location.reload();
-            });
+        const ethereumProvider = await getWalletProvider();
+        if (!ethereumProvider) {
+            console.error("No wallet detected");
+            return;
         }
+
+        provider = new ethers.providers.Web3Provider(ethereumProvider, "any");
+        
+        // --- AUTO NETWORK SWITCH LOGIC ---
+        const network = await provider.getNetwork();
+        if (network.chainId !== TESTNET_CHAIN_ID) {
+            try {
+                await ethereumProvider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x61' }], // 97 = 0x61
+                });
+                window.location.reload();
+                return; 
+            } catch (switchError) {
+                console.warn("User denied network switch or network not added.");
+            }
+        }
+
+        // Read-only contract instance
+        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+        window.contract = contract;
+
+        const accounts = await ethereumProvider.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+            signer = provider.getSigner();
+            window.signer = signer;
+            
+            // Signer के साथ contract instance
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+            window.contract = contract; 
+            
+            await setupApp(accounts[0]);
+        }
+
+        // Listeners (ethereumProvider का उपयोग करें window.ethereum के बजाय)
+        ethereumProvider.on('chainChanged', () => window.location.reload());
+        ethereumProvider.on('accountsChanged', (accs) => {
+            if (accs.length === 0) localStorage.removeItem('userAddress');
+            else localStorage.setItem('userAddress', accs[0]);
+            window.location.reload();
+        });
+
     } catch (error) {
         console.error("Init Error:", error);
     }
 }
-
 
 window.handleActivatePhase = async function(phaseId) {
     try {
