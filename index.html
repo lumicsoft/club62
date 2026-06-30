@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blackstax | Enterprise DeFi Evolution</title>
+    <title>Club62 | Enterprise DeFi Evolution</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css">
     <style>
-        .premium-gradient-bg { background: radial-gradient(circle at top right, rgba(234, 179, 8, 0.08), transparent), radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent); }
-        .hover-glow:hover { box-shadow: 0 0 25px rgba(234, 179, 8, 0.15); border-color: rgba(234, 179, 8, 0.3) !important; }
+        .premium-gradient-bg { background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.08), transparent), radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent); }
+        .hover-glow:hover { box-shadow: 0 0 25px rgba(212, 175, 55, 0.15); border-color: rgba(212, 175, 55, 0.3) !important; }
+        .text-gradient { background: linear-gradient(135deg, #D4AF37, #FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn-glow { background: linear-gradient(135deg, #B8860B, #D4AF37); color: #000; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; }
+        .icon-circle { width: 50px; height: 50px; border-radius: 50%; background: rgba(212, 175, 55, 0.1); display: flex; align-items: center; justify-content: center; color: #D4AF37; }
+        .premium-border { border: 1px solid rgba(212, 175, 55, 0.2); }
     </style>
 </head>
-<body class="premium-gradient-bg">
+<body class="premium-gradient-bg text-white">
 
     <canvas id="bg-canvas"></canvas>
     <div id="header-placeholder"></div>
@@ -25,84 +29,62 @@
                 <i data-lucide="shield-check" class="w-3 h-3"></i> Enterprise Audited
             </div>
             <div class="px-4 py-1.5 glass text-[10px] font-bold tracking-wider text-blue-400 border-blue-500/20 uppercase italic underline decoration-blue-500/30 text-xs tracking-widest">• Non-Custodial •</div>
-            <div class="px-4 py-1.5 glass text-[10px] font-bold tracking-wider text-purple-400 border-purple-500/20 uppercase">Blackstax On-Chain</div>
+            <div class="px-4 py-1.5 glass text-[10px] font-bold tracking-wider text-purple-400 border-purple-500/20 uppercase">Club62 On-Chain</div>
         </div>
 
         <h1 class="hero-title text-6xl md:text-8xl font-black orbitron leading-none mb-6 uppercase">
-            0.23% <span class="text-gradient italic">Daily</span>
+            $10.00 <span class="text-gradient italic">Target</span>
         </h1>
         <h2 class="text-2xl md:text-3xl font-bold orbitron text-white mb-6 uppercase tracking-widest">
-            Blackstax Enterprise Strategy
+            Club62 Enterprise Strategy
         </h2>
         <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Earn sustainable returns through professionally managed staking within the <b>Blackstax</b> ecosystem. Secure, transparent, and built for growth.
+            Earn sustainable returns through professionally managed staking within the <b>Club62</b> ecosystem. Secure, transparent, and built for growth with 20% burn per level.
         </p>
         <div class="flex flex-wrap justify-center gap-4">
             <button id="login-btn-main" onclick="handleLogin()" class="btn-glow px-10 py-4 rounded-2xl font-black text-lg orbitron uppercase">Start Staking</button>
         </div>
         <p class="mt-6 text-gray-500 font-bold orbitron text-[11px] tracking-[0.2em] uppercase">
-            Min Stake: 100 BLX | 14 Day Unstake Cooldown
+            Initial Supply: 0 | 20% Burn Per Level
         </p>
     </header>
 
     <section class="max-w-7xl mx-auto px-6 py-20 relative z-10">
         <div class="text-center mb-16">
             <h2 class="text-3xl font-black orbitron italic uppercase">3 Ways to <span class="text-gradient">Earn</span></h2>
-            <p class="text-gray-500 mt-2">Maximize your wealth with the **Blackstax** multi-tier model</p>
+            <p class="text-gray-500 mt-2">Maximize your wealth with the **Club62** multi-tier model</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="glass p-8 text-center border-t-4 border-t-yellow-500 hover-glow transition-all">
                 <h4 class="text-xl font-bold orbitron mb-2">Stake Rewards</h4>
-                <div class="text-4xl font-black text-gradient my-4">0.23% Daily</div>
-                <p class="text-sm text-gray-400 mb-4">Consistent returns on your BLX stakes.</p>
-                <div class="text-[10px] font-bold text-yellow-400 border border-yellow-400/20 rounded px-2 py-1 inline-block">84% APR</div>
+                <div class="text-4xl font-black text-gradient my-4">Deflationary</div>
+                <p class="text-sm text-gray-400 mb-4">Consistent returns with 20% burn mechanism.</p>
+                <div class="text-[10px] font-bold text-yellow-400 border border-yellow-400/20 rounded px-2 py-1 inline-block uppercase">Auto-Burn</div>
             </div>
             <div class="glass p-8 text-center border-t-4 border-t-purple-500 hover-glow transition-all">
                 <h4 class="text-xl font-bold orbitron mb-2">10-Level Referral</h4>
                 <div class="text-4xl font-black text-gradient my-4">Dynamic</div>
                 <p class="text-sm text-gray-400 mb-4">Earn across 10 levels of your network depth.</p>
-                <div class="text-[10px] font-bold text-purple-400 border border-purple-400/20 rounded px-2 py-1 inline-block">10 Levels Deep</div>
+                <div class="text-[10px] font-bold text-purple-400 border border-purple-400/20 rounded px-2 py-1 inline-block uppercase">10 Levels Deep</div>
             </div>
             <div class="glass p-8 text-center border-t-4 border-t-pink-500 hover-glow transition-all">
                 <h4 class="text-xl font-bold orbitron mb-2">Leadership Rank</h4>
                 <div class="text-4xl font-black text-gradient my-4">Rewards</div>
                 <p class="text-sm text-gray-400 mb-4">Unlock massive bonuses by growing your team volume.</p>
-                <div class="text-[10px] font-bold text-pink-400 border border-pink-400/20 rounded px-2 py-1 inline-block">Star to C. Diamond</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="max-w-4xl mx-auto px-6 py-12 relative z-10">
-        <div class="glass p-10 premium-border rounded-[40px]">
-            <h2 class="text-3xl font-black orbitron italic text-center mb-8 uppercase"><span class="text-gradient">Blackstax</span> Calculator</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                <div>
-                    <label class="block text-gray-500 text-[10px] font-bold orbitron mb-4 uppercase tracking-widest">Stake Amount (BLX)</label>
-                    <input type="number" id="roi-input" value="100" oninput="calcROI()" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:border-yellow-500 text-2xl font-black orbitron text-white">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/5 p-4 rounded-xl border border-white/5 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold mb-1">Daily</p>
-                        <p id="daily-p" class="text-xl font-black text-white">0.23 BLX</p>
-                    </div>
-                    <div class="bg-yellow-500/10 p-4 rounded-xl border border-yellow-500/20 text-center">
-                        <p class="text-[9px] text-yellow-500 uppercase font-bold mb-1">15 Days</p>
-                        <p id="cycle-p" class="text-xl font-black text-yellow-500">3.45 BLX</p>
-                    </div>
-                </div>
+                <div class="text-[10px] font-bold text-pink-400 border border-pink-400/20 rounded px-2 py-1 inline-block uppercase">Star to C. Diamond</div>
             </div>
         </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-6 py-24 relative z-10">
         <div class="text-center mb-16">
-            <h2 class="text-4xl font-black orbitron italic uppercase">HOW <span class="text-gradient">Blackstax</span> Works</h2>
+            <h2 class="text-4xl font-black orbitron italic uppercase">HOW <span class="text-gradient">Club62</span> Works</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="wallet"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">01. Connect Wallet</h4></div></div>
             <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="bar-chart-big"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">02. Register</h4></div></div>
-            <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="database"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">03. Stake BLX</h4></div></div>
+            <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="database"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">03. Stake K62</h4></div></div>
             <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="zap"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">04. Earn ROI</h4></div></div>
             <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="network"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">05. Team Bonus</h4></div></div>
             <div class="glass p-8 premium-border hover-glow transition-all"><div class="relative z-10"><div class="icon-circle mb-6"><i data-lucide="refresh-cw"></i></div><h4 class="text-xl font-black mb-3 italic uppercase orbitron">06. Rank Rewards</h4></div></div>
@@ -110,13 +92,6 @@
     </section>
 
     <script>
-        function calcROI() {
-            const val = document.getElementById('roi-input').value;
-            const daily = val * 0.0023; 
-            const cycle = daily * 15;
-            document.getElementById('daily-p').innerText = daily.toFixed(2) + ' BLX';
-            document.getElementById('cycle-p').innerText = cycle.toFixed(2) + ' BLX';
-        }
         lucide.createIcons();
     </script>
     <script src="web3-handler.js"></script>
