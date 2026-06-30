@@ -571,15 +571,15 @@ window.getUserShortDetails = async function(address) {
 };
 window.getUserProgress = async function(address) {
     try {
-        // Naya function jo aapne smart contract mein banaya hai
+        // Naye function ka naam use karein
         const progressArray = await window.contract.getUserFullProgress(address);
         
-        // Data ko frontend ke hisab se format karna
+        // Data format map karein
         return progressArray.map(item => {
             return {
                 phase: Number(item.phaseId),
-                isActive: item.isActive,
-                currentLevel: Number(item.currentLevel)
+                isActive: item.isActive, // Yeh bool hai
+                currentLevel: Number(item.currentLevel) // BigInt se Number
             };
         });
     } catch (err) {
