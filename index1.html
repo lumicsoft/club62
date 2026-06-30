@@ -154,22 +154,30 @@
         lucide.createIcons();
 
         // 1. Progress Status Loader
-        async function displayUserStatus(address) {
-            const container = document.getElementById('progress-container');
-            const progress = await window.getUserProgress(address);
-            
-            container.innerHTML = '';
-            progress.forEach((p, index) => {
-                if(index === 0) return; // Index 0 skip करें (क्योंकि 1-6 दिखाना है)
-                const isActive = p.isActive;
-                container.innerHTML += `
-                    <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
-                        <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">Phase ${p.phase}</p>
-                        <p class="text-sm font-black orbitron">${isActive ? 'Level ' + p.currentLevel : 'Inactive'}</p>
-                    </div>
-                `;
-            });
-        }
+       // 1. Progress Status Loader
+async function displayUserStatus(address) {
+    const container = document.getElementById('progress-container');
+    const progress = await window.getUserProgress(address); // Yeh wahi function hai jo array of objects return karta hai
+    
+    container.innerHTML = '';
+    
+    // Yahan index skip karne ki zaroorat nahi hai agar naya getUserFullProgress use kar rahe hain
+    progress.forEach((p) => {
+        // p = { phase: 1, isActive: true, currentLevel: 2 }
+        const isActive = p.isActive;
+        
+        container.innerHTML += `
+            <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
+                <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">
+                    Phase ${p.phase}
+                </p>
+                <p class="text-sm font-black orbitron ${isActive ? 'text-white' : 'text-gray-600'}">
+                    ${isActive ? 'Level ' + p.currentLevel : 'Inactive'}
+                </p>
+            </div>
+        `;
+    });
+}
 
         // 2. Initializer
         window.addEventListener('load', async () => {
