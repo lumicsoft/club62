@@ -150,44 +150,51 @@ window.handleBuyLevel = async function(phaseId, level, costInEther) {
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
         
         const costPerLevel = ethers.utils.parseEther(costInEther.toString());
-        const payment = costPerLevel.mul(2); // 2x Payment
+        const payment = costPerLevel.mul(2); 
 
         const userAddress = await signer.getAddress();
         const allowance = await usdt.allowance(userAddress, CONTRACT_ADDRESS);
         
-        // अगर अलाउंस कम है, तो अप्रूवल कॉल ट्रिगर करें
+        // 1. Approval Logic (with buffer)
         if (allowance.lt(payment)) {
-            console.log("Requesting Approval...");
-            // gasLimit को बढ़ाकर सेट करें ताकि पॉप-अप पक्का आए
+            console.log("Estimating Approval Gas...");
+            const gasLimitApprove = await usdt.estimateGas.approve(CONTRACT_ADDRESS, payment);
+            // 40% buffer lagaya
+            const bufferedGasApprove = gasLimitApprove.mul(140).div(100); 
+
             const approveTx = await usdt.approve(CONTRACT_ADDRESS, payment, {
-                gasLimit: 100000 
+                gasLimit: bufferedGasApprove
             });
             
-            alert("Approve transaction sent. Please wait for confirmation.");
-            await approveTx.wait(); // यहाँ पॉप-अप आना चाहिए
-            console.log("Approval Confirmed!");
+            alert("Approval transaction sent. Please wait for confirmation.");
+            await approveTx.wait();
         }
 
-        // लेवल खरीदें
-        console.log("Buying Level...");
+        // 2. Buy Level Logic (with buffer)
+        console.log("Estimating Purchase Gas...");
+        const gasLimitBuy = await contract.estimateGas.buyMatrixLevel(phaseId, level);
+        // 40% buffer lagaya
+        const bufferedGasBuy = gasLimitBuy.mul(140).div(100);
+
         const tx = await contract.buyMatrixLevel(phaseId, level, {
-            gasLimit: 500000 // कॉम्प्लेक्स फंक्शन के लिए पर्याप्त गैस
+            gasLimit: bufferedGasBuy
         });
         
-        await tx.wait();
         alert("Level Purchased Successfully!");
+        await tx.wait();
         location.reload();
         
     } catch (err) { 
         console.error(err);
-        // अगर यूजर कैंसिल करता है तो उसका एरर
         if (err.code === 4001) {
             alert("Transaction cancelled by user.");
         } else {
-            alert("Transaction Failed: " + (err.reason || err.message));
+            // Smart contract revert messages show karne ke liye
+            alert("Transaction Failed: " + (err.data?.message || err.message));
         }
     }
 };
+
 // --- K62 TO USDT SWAP ---
 window.handleSwapTokenToUSDT = async function(amountStr) {
     if (!amountStr || amountStr <= 0) return alert("Enter valid amount");
