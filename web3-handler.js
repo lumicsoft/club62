@@ -25,7 +25,7 @@ const CONTRACT_ABI = [
     "function swapTokenToUSDT(uint256 _tokenAmount) external",
      "function getLevelCost(uint256 phaseId, uint256 level) external view returns (uint256)",
     "function swapUSDTToToken(uint256 _usdtAmount) external",
-    "function getUserProgress(address _user) external view returns (bool[] activePhases, uint256[] levels)",
+  "function getUserFullProgress(address _user) view returns ((uint256 phaseId, bool isActive, uint256 currentLevel)[])",
      "function getTeamByLevel(address _user, uint256 _level) external view returns (address[] memory)",
      "function getTotalAvailableStock(address _user) external view returns (uint256)",
      "function getLiquidityDetails() external view returns (uint256 totalTokens, uint256 totalLiquidity, uint256 liveRate)",
