@@ -157,28 +157,30 @@
        // 1. Progress Status Loader
 async function displayUserStatus(address) {
     const container = document.getElementById('progress-container');
-    const progress = await window.getUserProgress(address); // Yeh wahi function hai jo array of objects return karta hai
+    // Contract se data fetch karein
+    const progressData = await window.contract.getUserFullProgress(address);
     
     container.innerHTML = '';
     
-    // Yahan index skip karne ki zaroorat nahi hai agar naya getUserFullProgress use kar rahe hain
-    progress.forEach((p) => {
-        // p = { phase: 1, isActive: true, currentLevel: 2 }
-        const isActive = p.isActive;
+    // progressData array of objects hai
+    progressData.forEach((item) => {
+        // BigInt ya BigNumber ko normal number mein convert karna zaroori hai
+        const phase = Number(item.phaseId);
+        const isActive = item.isActive; // Yeh boolean true/false hoga
+        const level = Number(item.currentLevel);
         
         container.innerHTML += `
             <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
                 <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">
-                    Phase ${p.phase}
+                    Phase ${phase}
                 </p>
                 <p class="text-sm font-black orbitron ${isActive ? 'text-white' : 'text-gray-600'}">
-                    ${isActive ? 'Level ' + p.currentLevel : 'Inactive'}
+                    ${isActive ? 'Level ' + level : 'Inactive'}
                 </p>
             </div>
         `;
     });
 }
-
         // 2. Initializer
         window.addEventListener('load', async () => {
             await new Promise(r => setTimeout(r, 1000));
