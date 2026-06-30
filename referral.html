@@ -63,20 +63,36 @@
     <script>
         lucide.createIcons();
 
+        // Helper function for BigInt/Ether formatting
+        function format(val) {
+            if (!val) return "0.00";
+            return ethers.utils.formatEther(val);
+        }
+
         async function loadReferralData() {
             if (typeof window.contract === 'undefined') { setTimeout(loadReferralData, 1000); return; }
             try {
                 const address = await window.signer.getAddress();
-                // आपके कॉन्ट्रैक्ट के getUserDetails फंक्शन का उपयोग
+                
+                // 1. Fetch User Stats (Directs & Paid Directs)
+                // Note: Contract mein users[address] public hai toh hum sidha access kar sakte hain
+                const userData = await window.contract.users(address);
+                
+                // 2. Fetch Earnings
                 const d = await window.contract.getUserDetails(address);
                 
-                document.getElementById('direct-count').innerText = d.directInc > 0 ? "..." : "Check Tree"; // कॉन्ट्रैक्ट में डायरेक्ट काउंट मैपिंग से लें
+                // 3. UI Updates
+                document.getElementById('direct-count').innerText = userData.directCount.toString();
+                document.getElementById('paid-direct-count').innerText = userData.paidDirectCount.toString();
                 document.getElementById('total-earned').innerText = format(d.totalEarned);
                 document.getElementById('direct-earnings').innerText = format(d.directInc); 
                 document.getElementById('level-earnings').innerText = format(d.levelInc);
                 
+                // 4. Load Default Level 1
                 loadLevelData(1);
-            } catch (err) { console.error("Referral Error:", err); }
+            } catch (err) { 
+                console.error("Data Load Error:", err); 
+            }
         }
 
         async function loadLevelData(level) {
@@ -84,24 +100,32 @@
             tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-yellow-500">Syncing Level ${level}...</td></tr>`;
             try {
                 const address = await window.signer.getAddress();
-                const wallets = await window.contract.getTeamByLevel(address, level); // नया अपडेटेड फंक्शन
+                const wallets = await window.contract.getTeamByLevel(address, level);
                 
-                if (!wallets || wallets.length === 0) {
+                if (!wallets || wallets.length === 0 || (wallets.length === 1 && wallets[0] === "0x0000000000000000000000000000000000000000")) {
                     tableBody.innerHTML = `<tr><td colspan="3" class="p-10 text-center text-gray-600">No members found</td></tr>`;
                     return;
                 }
+                
                 let html = '';
                 wallets.forEach(w => {
-                    html += `<tr>
-                        <td class="p-4 font-mono text-yellow-500">${w.substring(0,6)}...${w.substring(38)}</td>
-                        <td class="p-4">Level ${level}</td>
-                        <td class="p-4"><span class="status-badge text-green-500">ACTIVE</span></td>
-                    </tr>`;
+                    // Filter empty addresses
+                    if (w !== "0x0000000000000000000000000000000000000000") {
+                        html += `<tr>
+                            <td class="p-4 font-mono text-yellow-500">${w.substring(0,6)}...${w.substring(38)}</td>
+                            <td class="p-4">Level ${level}</td>
+                            <td class="p-4"><span class="status-badge text-green-500">ACTIVE</span></td>
+                        </tr>`;
+                    }
                 });
-                tableBody.innerHTML = html;
-            } catch (err) { tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error Loading Data</td></tr>`; }
+                tableBody.innerHTML = html || `<tr><td colspan="3" class="p-10 text-center text-gray-600">No members found</td></tr>`;
+            } catch (err) { 
+                console.error(err);
+                tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error Loading Data</td></tr>`; 
+            }
         }
 
+        // Wait for Web3 init
         window.addEventListener('load', () => setTimeout(loadReferralData, 1500));
     </script>
 </body>
