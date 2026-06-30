@@ -562,7 +562,24 @@ window.getUserShortDetails = async function(address) {
         return null;
     }
 };
-
+window.getUserProgress = async function(address) {
+    try {
+        const [activePhases, levels] = await window.contract.getUserProgress(address);
+        
+        let progress = [];
+        for (let i = 1; i <= 6; i++) {
+            progress.push({
+                phase: i,
+                isActive: activePhases[i],
+                currentLevel: levels[i]
+            });
+        }
+        return progress;
+    } catch (err) {
+        console.error("Error fetching progress:", err);
+        return [];
+    }
+};
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
