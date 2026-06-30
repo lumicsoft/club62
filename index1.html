@@ -68,6 +68,13 @@
             </div>
         </div>
 
+        <div class="premium-card p-6">
+            <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-blue-500 tracking-widest">My Progress Status</h3>
+            <div id="progress-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                <p class="text-gray-500 text-xs">Syncing progress...</p>
+            </div>
+        </div>
+
         <div class="premium-card p-6 border border-blue-500/20">
             <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-blue-500 tracking-widest">Instant Token Swap</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -137,7 +144,6 @@
                 <p class="text-gray-500 text-xs">Select a Phase to view levels...</p>
             </div>
         </div>
-
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
@@ -146,6 +152,34 @@
     
     <script>
         lucide.createIcons();
+
+        // 1. Progress Status Loader
+        async function displayUserStatus(address) {
+            const container = document.getElementById('progress-container');
+            const progress = await window.getUserProgress(address);
+            
+            container.innerHTML = '';
+            progress.forEach((p, index) => {
+                if(index === 0) return; // Index 0 skip करें (क्योंकि 1-6 दिखाना है)
+                const isActive = p.isActive;
+                container.innerHTML += `
+                    <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
+                        <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">Phase ${p.phase}</p>
+                        <p class="text-sm font-black orbitron">${isActive ? 'Level ' + p.currentLevel : 'Inactive'}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // 2. Initializer
+        window.addEventListener('load', async () => {
+            await new Promise(r => setTimeout(r, 1000));
+            if (window.signer) {
+                const addr = await window.signer.getAddress();
+                displayUserStatus(addr);
+            }
+        });
+
         function copyLink() {
             const refInput = document.getElementById('refURL');
             if(refInput.value && refInput.value !== "loading") {
