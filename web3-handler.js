@@ -564,22 +564,23 @@ window.getUserShortDetails = async function(address) {
 };
 window.getUserProgress = async function(address) {
     try {
-        const [activePhases, levels] = await window.contract.getUserProgress(address);
+        // Naya function jo aapne smart contract mein banaya hai
+        const progressArray = await window.contract.getUserFullProgress(address);
         
-        let progress = [];
-        for (let i = 1; i <= 6; i++) {
-            progress.push({
-                phase: i,
-                isActive: activePhases[i],
-                currentLevel: levels[i]
-            });
-        }
-        return progress;
+        // Data ko frontend ke hisab se format karna
+        return progressArray.map(item => {
+            return {
+                phase: Number(item.phaseId),
+                isActive: item.isActive,
+                currentLevel: Number(item.currentLevel)
+            };
+        });
     } catch (err) {
         console.error("Error fetching progress:", err);
         return [];
     }
 };
+
 window.fetchAllData = async function(address) {
     try {
         console.log("Syncing all data for:", address);
