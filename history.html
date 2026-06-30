@@ -3,35 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tx History | PRO MAX</title>
-    <link rel="stylesheet" href="style1.css">
+    <title>Income History | Club62</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .filter-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #666; padding: 12px 24px; border-radius: 16px; font-size: 11px; font-weight: 800; text-transform: uppercase; transition: all 0.4s ease; }
-        .filter-btn.active { background: #FFD700; color: black; box-shadow: 0 0 20px rgba(184, 134, 11, 0.4); }
-        .history-inner { position: relative; margin: 2px; background: #080810; border-radius: 22px; padding: 20px; z-index: 2; display: flex; justify-content: space-between; align-items: center; }
+        body { background-color: #050505; color: white; }
+        .history-row:hover { background: rgba(255, 255, 255, 0.03); }
     </style>
 </head>
-<body class="pt-28 pb-32">
-    <main class="max-w-4xl mx-auto px-6 relative z-10">
-        <div class="mb-12 text-center">
-            <h1 class="text-4xl font-black orbitron italic uppercase tracking-tighter">TX <span class="text-yellow-500">HISTORY</span></h1>
-            <p class="text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em] mt-2 italic">Official Contract Ledger</p>
-        </div>
+<body class="p-4 md:p-10">
 
-        <div class="flex flex-wrap justify-center gap-3 mb-12">
-            <button onclick="showHistory('deposit')" id="btn-deposit" class="filter-btn active">Deposits</button>
-            <button onclick="showHistory('compounding')" id="btn-compounding" class="filter-btn">Reinvest Capital</button>
-            <button onclick="showHistory('income')" id="btn-income" class="filter-btn">Income</button>
-            <button onclick="showHistory('withdrawal')" id="btn-withdrawal" class="filter-btn">Withdrawals</button>
-        </div>
+    <main class="max-w-7xl mx-auto space-y-8">
+        <h2 class="text-2xl font-black orbitron uppercase text-yellow-500">Income History</h2>
 
-        <div id="history-container" class="grid gap-6">
-            <div class="text-center py-20 opacity-30">
-                <div class="w-10 h-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="orbitron text-[10px] tracking-widest uppercase">Syncing Ledger...</p>
+        <div class="premium-card p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] text-gray-500 uppercase tracking-widest border-b border-white/10">
+                            <th class="p-4">Type</th>
+                            <th class="p-4">Amount (K62)</th>
+                            <th class="p-4">From User</th>
+                            <th class="p-4">Phase</th>
+                            <th class="p-4">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <tr><td colspan="5" class="p-10 text-center text-gray-600">Loading History...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
@@ -42,75 +43,45 @@
     <script>
         lucide.createIcons();
 
-        async function showHistory(category) {
-            const container = document.getElementById('history-container');
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-' + category);
-            if(activeBtn) activeBtn.classList.add('active');
-
-            container.innerHTML = `<div class="text-center py-20"><p class="orbitron text-[10px] text-gray-600 animate-pulse uppercase tracking-widest">Accessing Blockchain...</p></div>`;
-
+        async function loadHistory() {
+            const tbody = document.getElementById('history-table-body');
             try {
-                if (!window.contract) throw new Error("Contract not connected");
-                
-                // Mapping: UI Category to Contract Types
-               const typeMapForBackend = {
-    'stake': ['STAKE'], 
-    'compounding': [], // Contract mein reinvest ka alag event/type nahi hai, toh ise empty rakhein ya 'ROI' map karein
-    'withdrawal': ['WITHDRAW'], 
-    'income': ['ROI', 'LEVELINCOME', 'REFERRALBONUS', 'STAR', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'D. DIAMOND', 'C. DIAMOND', 'TEAMPROFITSHARE']
-};
-                const logs = await window.fetchBlockchainHistory(typeMapForBackend[category]);
+                const address = await window.signer.getAddress();
+                // कॉन्ट्रैक्ट से इनकम हिस्ट्री लाएं
+                const history = await window.contract.getIncomeHistory(address);
 
-                if(!logs || logs.length === 0) {
-                    container.innerHTML = `<div class="text-center py-20 border border-dashed border-white/5 rounded-[40px]"><p class="text-gray-600 text-[10px] font-bold orbitron uppercase tracking-widest">No ${category} found</p></div>`;
+                if (history.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-gray-600">No history found.</td></tr>`;
                     return;
                 }
 
                 let html = '';
-                logs.forEach(item => {
-                    const isPositive = !item.type.includes('WITHDRAW');
+                // हिस्ट्री को उल्टा दिखाएं (नया सबसे ऊपर)
+                for (let i = history.length - 1; i >= 0; i--) {
+                    const record = history[i];
+                    const amount = parseFloat(ethers.utils.formatUnits(record.amount, 18)).toFixed(2);
+                    const date = new Date(record.timestamp * 1000).toLocaleString();
+                    
                     html += `
-                    <div class="premium-card mb-4"> 
-                        <div class="history-inner">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                                    <i data-lucide="${getIcon(category)}" class="w-5 h-5 ${isPositive ? 'text-yellow-500' : 'text-red-500'}"></i>
-                                </div>
-                                <div>
-                                    <p class="text-[11px] font-black orbitron text-white tracking-tighter uppercase">${item.type.replace(/_/g, ' ')}</p>
-                                    <p class="text-[8px] font-medium text-gray-600 mt-0.5 uppercase">${item.date} | ${item.time}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-xl orbitron text-white font-black"><span class="text-sm text-yellow-600 font-bold mr-0.5">$</span>${item.amount}</div>
-                                <p class="text-[8px] text-gray-600 font-bold uppercase tracking-[0.2em] mt-1 italic">Verified</p>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-                lucide.createIcons();
+                        <tr class="history-row border-b border-white/5 text-xs font-mono">
+                            <td class="p-4 font-bold text-blue-400">${record.incomeType}</td>
+                            <td class="p-4 text-green-400">+${amount}</td>
+                            <td class="p-4 text-gray-400">${record.fromUser.substring(0,8)}...</td>
+                            <td class="p-4 text-gray-400">Phase ${record.phaseId}</td>
+                            <td class="p-4 text-gray-500">${date}</td>
+                        </tr>
+                    `;
+                }
+                tbody.innerHTML = html;
             } catch (err) {
-                console.error("History Error:", err);
-                container.innerHTML = `<div class="text-center py-20 text-red-500 orbitron text-[10px]">SYNC ERROR: PLEASE REFRESH</div>`;
+                console.error("History Load Error:", err);
+                tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500">Error loading history.</td></tr>`;
             }
         }
 
-        function getIcon(category) {
-            const map = { 'deposit': 'arrow-down-left', 'compounding': 'refresh-cw', 'income': 'trending-up', 'withdrawal': 'external-link' };
-            return map[category] || 'circle';
-        }
-
-        window.addEventListener('load', () => {
-            const check = setInterval(() => {
-                if (window.contract) {
-                    showHistory('stake');
-                    clearInterval(check);
-                }
-            }, 500);
+        window.addEventListener('load', async () => {
+            await new Promise(r => setTimeout(r, 2000));
+            if(window.signer) loadHistory();
         });
     </script>
 </body>
