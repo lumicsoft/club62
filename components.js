@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     <button onclick="location.href='index1.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('index1.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">Dashboard</button>
                     <button onclick="location.href='deposits.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('deposits.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">Stake</button>
                     <button onclick="location.href='referral.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('referral.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">Referral</button>
-                    <button onclick="location.href='leadership.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('leadership.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">Rank</button>
                     <button onclick="location.href='history.html'" class="px-3 py-2 rounded-lg text-[10px] font-bold orbitron uppercase transition-all ${path.includes('history.html') ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-white'}">History</button>
                 </div>
                 <div class="flex items-center gap-2">
@@ -39,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="flex flex-col gap-4">
                 <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
                 <button onclick="location.href='index1.html'" class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl text-gray-300 orbitron text-xs font-bold border border-white/5"><i data-lucide="layout-dashboard" class="w-5 h-5 text-yellow-500"></i> DASHBOARD</button>
-                <button onclick="location.href='leadership.html'" class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl text-gray-300 orbitron text-xs font-bold border border-white/5"><i data-lucide="award" class="w-5 h-5 text-purple-500"></i> RANK </button>
+               
                 <button onclick="location.href='history.html'" class="flex items-center gap-4 p-4 bg-white/5 rounded-2xl text-gray-300 orbitron text-xs font-bold border border-white/5"><i data-lucide="history" class="w-5 h-5 text-blue-500"></i> TRANSACTION HISTORY</button>
                 <button onclick="handleLogout()" class="flex items-center gap-4 p-4 bg-red-500/10 rounded-2xl text-red-500 orbitron text-xs font-bold border border-red-500/10"><i data-lucide="power" class="w-5 h-5"></i> LOGOUT SESSION</button>
                 <button onclick="toggleMobileMenu()" class="mt-2 py-4 text-gray-500 orbitron text-[10px] font-black uppercase tracking-widest">Close Menu</button>
