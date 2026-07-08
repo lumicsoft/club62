@@ -137,12 +137,33 @@ async function init() {
 window.handleActivatePhase = async function(phaseId) {
     try {
         const usdt = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, signer);
-        // 3 USDT Approve
-        await (await usdt.approve(CONTRACT_ADDRESS, ethers.utils.parseEther("3"))).wait();
-        const tx = await contract.activatePhase(phaseId);
+        
+        // 1. Approve Transaction Estimate
+        const approveGas = await usdt.estimateGas.approve(CONTRACT_ADDRESS, ethers.utils.parseEther("3"));
+        // 30% Buffer lagaya
+        const approveGasLimit = approveGas.mul(130).div(100); 
+
+        console.log("Approving USDT...");
+        await (await usdt.approve(CONTRACT_ADDRESS, ethers.utils.parseEther("3"), { 
+            gasLimit: approveGasLimit 
+        })).wait();
+
+        // 2. Activate Phase Transaction Estimate
+        const activateGas = await contract.estimateGas.activatePhase(phaseId);
+        // 30% Buffer lagaya
+        const activateGasLimit = activateGas.mul(130).div(100);
+
+        console.log("Activating Phase...");
+        const tx = await contract.activatePhase(phaseId, { 
+            gasLimit: activateGasLimit 
+        });
+        
         await tx.wait();
-        alert("Phase Activated!");
-    } catch (err) { alert(err.message); }
+        alert("Phase Activated Successfully!");
+    } catch (err) { 
+        console.error(err);
+        alert("Transaction Failed: " + (err.reason || err.message)); 
+    }
 };
 window.handleBuyLevel = async function(phaseId, level, costInEther) {
     try {
