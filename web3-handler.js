@@ -21,20 +21,23 @@ const CONTRACT_ABI = [
     "function activatePhase(uint256 phaseId) external",
     "function buyMatrixLevel(uint256 phaseId, uint256 level) external",
     "function withdrawAllIncome() external",
-  "function withdrawStockAmount(uint256 _amount) external",
+    "function withdrawStockAmount(uint256 _amount) external",
     "function swapTokenToUSDT(uint256 _tokenAmount) external",
-     "function getLevelCost(uint256 phaseId, uint256 level) external view returns (uint256)",
+    "function getLevelCost(uint256 phaseId, uint256 level) external view returns (uint256)",
     "function swapUSDTToToken(uint256 _usdtAmount) external",
-  "function getUserFullProgress(address _user) view returns ((uint256 phaseId, bool isActive, uint256 currentLevel)[])",
-     "function getTeamByLevel(address _user, uint256 _level) external view returns (address[] memory)",
-     "function getTotalAvailableStock(address _user) external view returns (uint256)",
-     "function getLiquidityDetails() external view returns (uint256 totalTokens, uint256 totalLiquidity, uint256 liveRate)",
+    "function getUserFullProgress(address _user) view returns ((uint256 phaseId, bool isActive, uint256 currentLevel)[])",
+    "function getTeamByLevel(address _user, uint256 _level) external view returns (address[])",
+    "function getTotalAvailableStock(address _user) external view returns (uint256)",
+    // Updated: totalLiquidityUSDT, liveRate returns
+    "function getLiquidityDetails() external view returns (uint256 totalTokensInMarket, uint256 totalLiquidityUSDT, uint256 liveRate)",
     "function getUserTree(address _user) external view returns (address left, address right)",
-    "function getIncomeHistory(address _user) external view returns (tuple(uint256 amount, uint256 timestamp, string incomeType, address fromUser, uint256 phaseId)[])",
-    "function users(address) view returns (address referrer, address parent, address left, address right, uint256 directCount, uint256 paidDirectCount, uint256 directIncome, uint256 levelIncome, uint256 salaryIncome, uint256 totalEarned, uint256 lapsedIncome)",
+    "function getIncomeHistory(address _user) external view returns ((uint256 amount, uint256 timestamp, string incomeType, address fromUser, uint256 phaseId)[])",
+    // Updated: users mapping to include heldIncome
+    "function users(address) view returns (address referrer, address parent, address left, address right, uint256 directCount, uint256 paidDirectCount, uint256 directIncome, uint256 levelIncome, uint256 salaryIncome, uint256 heldIncome, uint256 totalEarned, uint256 lapsedIncome)",
     "function getUserDetails(address _user) external view returns (address referrer, uint256 directInc, uint256 levelInc, uint256 salaryInc, uint256 totalEarned, uint256 lapsed)",
-   "function isUserRegistered(address _user) external view returns (bool)"
+    "function isUserRegistered(address _user) external view returns (bool)"
 ];
+
 const ERC20_ABI = ["function approve(address spender, uint256 amount) public returns (bool)", "function allowance(address owner, address spender) public view returns (uint256)"];
 
 const calculateGlobalROI = () => 0.90;
