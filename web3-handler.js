@@ -586,6 +586,8 @@ window.getUserShortDetails = async function(address) {
             directIncome: parseFloat(ethers.utils.formatUnits(u.directIncome, 18)).toFixed(2),
             levelIncome: parseFloat(ethers.utils.formatUnits(u.levelIncome, 18)).toFixed(2),
             salaryIncome: parseFloat(ethers.utils.formatUnits(u.salaryIncome, 18)).toFixed(2),
+            // heldIncome add kiya gaya hai (Index 9)
+            heldIncome: parseFloat(ethers.utils.formatUnits(u.heldIncome, 18)).toFixed(2),
             totalEarned: parseFloat(ethers.utils.formatUnits(u.totalEarned, 18)).toFixed(2)
         };
     } catch (e) {
@@ -593,6 +595,7 @@ window.getUserShortDetails = async function(address) {
         return null;
     }
 };
+
 window.getUserProgress = async function(address) {
     try {
         // Naye function ka naam use karein
@@ -646,13 +649,17 @@ window.fetchAllData = async function(address) {
         updateText('direct-income', format(userData.directIncome));
         updateText('level-income', format(userData.levelIncome));
         updateText('salary-income', format(userData.salaryIncome));
+        
+        // Naya field add kiya: Held Income
+        updateText('held-income', format(userData.heldIncome));
+        
         updateText('total-earned', format(userData.totalEarned));
         updateText('lapsed-income', format(userData.lapsedIncome));
         
         // Market Info
         updateText('live-rate', format(liq.liveRate));
 
-        // 4. Stock Balance Update (Call to the window function)
+        // 4. Stock Balance Update
         await window.updateStockBalance(address); 
 
         console.log("Dashboard sync complete!");
