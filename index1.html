@@ -95,10 +95,11 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="dollar-sign" class="text-green-500 w-6 h-6 mb-2"></i><p class="label-text">Direct Income</p><h3 class="amount-text orbitron"><span id="direct-income">0.00</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="layers" class="text-purple-500 w-6 h-6 mb-2"></i><p class="label-text">Level Income</p><h3 class="amount-text orbitron"><span id="level-income">0.00</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="briefcase" class="text-orange-500 w-6 h-6 mb-2"></i><p class="label-text">Salary Income</p><h3 class="amount-text orbitron"><span id="salary-income">0.00</span></h3></div></div>
+            <div class="premium-card border-red-500/30"><div class="inner-content stat-box"><i data-lucide="alert-triangle" class="text-red-500 w-6 h-6 mb-2"></i><p class="label-text text-red-500">Held Income</p><h3 class="amount-text orbitron text-red-500"><span id="held-income">0.00</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="alert-circle" class="text-red-500 w-6 h-6 mb-2"></i><p class="label-text">Lapsed Income</p><h3 class="amount-text orbitron"><span id="lapsed-income">0.00</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="users" class="text-blue-500 w-6 h-6 mb-2"></i><p class="label-text">Direct Team</p><h3 class="amount-text orbitron"><span id="direct-count">0</span></h3></div></div>
             <div class="premium-card"><div class="inner-content stat-box"><i data-lucide="award" class="text-yellow-500 w-6 h-6 mb-2"></i><p class="label-text">Total Earned</p><h3 class="amount-text orbitron text-yellow-500"><span id="total-earned">0.00</span></h3></div></div>
@@ -120,28 +121,13 @@
 
         <div class="premium-card p-6">
             <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-yellow-500 tracking-widest">Activate Phases</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                <button onclick="handleActivatePhase(1)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 1</button>
-                <button onclick="handleActivatePhase(2)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 2</button>
-                <button onclick="handleActivatePhase(3)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 3</button>
-                <button onclick="handleActivatePhase(4)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 4</button>
-                <button onclick="handleActivatePhase(5)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 5</button>
-                <button onclick="handleActivatePhase(6)" class="btn-outline-pro py-3 rounded-lg text-[10px]">Phase 6</button>
-            </div>
+            <div id="phase-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3"></div>
         </div>
 
         <div class="premium-card p-6 mt-6">
             <h3 class="text-xs font-black orbitron mb-6 uppercase italic text-yellow-500 tracking-widest">Select Phase & Buy Level</h3>
-            <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                <button onclick="renderLevels(1)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 1</button>
-                <button onclick="renderLevels(2)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 2</button>
-                <button onclick="renderLevels(3)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 3</button>
-                <button onclick="renderLevels(4)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 4</button>
-                <button onclick="renderLevels(5)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 5</button>
-                <button onclick="renderLevels(6)" class="btn-outline-pro px-4 py-2 rounded-lg text-[10px]">Phase 6</button>
-            </div>
             <div id="levels-container" class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <p class="text-gray-500 text-xs">Select a Phase to view levels...</p>
+                <p class="text-gray-500 text-xs">Select a Phase above to view levels...</p>
             </div>
         </div>
     </main>
@@ -153,35 +139,56 @@
     <script>
         lucide.createIcons();
 
-        // 1. Progress Status Loader
-       // 1. Progress Status Loader
-async function displayUserStatus(address) {
-    const container = document.getElementById('progress-container');
-    // Contract se data fetch karein
-    const progressData = await window.contract.getUserFullProgress(address);
-    
-    container.innerHTML = '';
-    
-    // progressData array of objects hai
-    progressData.forEach((item) => {
-        // BigInt ya BigNumber ko normal number mein convert karna zaroori hai
-        const phase = Number(item.phaseId);
-        const isActive = item.isActive; // Yeh boolean true/false hoga
-        const level = Number(item.currentLevel);
-        
-        container.innerHTML += `
-            <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
-                <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">
-                    Phase ${phase}
-                </p>
-                <p class="text-sm font-black orbitron ${isActive ? 'text-white' : 'text-gray-600'}">
-                    ${isActive ? 'Level ' + level : 'Inactive'}
-                </p>
-            </div>
-        `;
-    });
-}
-        // 2. Initializer
+        async function displayUserStatus(address) {
+            const container = document.getElementById('progress-container');
+            const pBtn = document.getElementById('phase-buttons-container');
+            const progressData = await window.contract.getUserFullProgress(address);
+            
+            container.innerHTML = '';
+            pBtn.innerHTML = '';
+            
+            progressData.forEach((item) => {
+                const phase = Number(item.phaseId);
+                const isActive = item.isActive;
+                const level = Number(item.currentLevel);
+                
+                container.innerHTML += `
+                    <div class="p-3 rounded-lg border ${isActive ? 'border-green-500/50 bg-green-500/5' : 'border-white/10 bg-black/40'}">
+                        <p class="text-[9px] uppercase font-bold ${isActive ? 'text-green-500' : 'text-gray-500'}">Phase ${phase}</p>
+                        <p class="text-sm font-black orbitron ${isActive ? 'text-white' : 'text-gray-600'}">
+                            ${isActive ? 'Level ' + level : 'Inactive'}
+                        </p>
+                    </div>`;
+
+                pBtn.innerHTML += `
+                    <button onclick="handleActivatePhase(${phase})" 
+                        class="py-3 rounded-lg text-[10px] flex items-center justify-center gap-2 ${isActive ? 'bg-green-700/50 text-green-400 border border-green-500/50 cursor-not-allowed' : 'btn-outline-pro'}" 
+                        ${isActive ? 'disabled' : ''}>
+                        ${isActive ? '<i data-lucide="check" class="w-3 h-3"></i> ACTIVE' : 'ACTIVATE ' + phase}
+                    </button>`;
+            });
+            lucide.createIcons();
+        }
+
+        window.renderLevels = async function(phaseId) {
+            const container = document.getElementById('levels-container');
+            const addr = await window.signer.getAddress();
+            const progressData = await window.contract.getUserFullProgress(addr);
+            const currentLevel = Number(progressData[phaseId - 1].currentLevel);
+            
+            container.innerHTML = '';
+            for(let i=1; i<=5; i++) {
+                const isBought = i <= currentLevel;
+                container.innerHTML += `
+                    <button onclick="handleBuyLevel(${phaseId}, ${i})" 
+                        class="p-4 rounded-xl border flex flex-col items-center gap-2 ${isBought ? 'bg-green-700/50 border-green-500 cursor-not-allowed text-green-400' : 'bg-black/40 border-white/10'}"
+                        ${isBought ? 'disabled' : ''}>
+                        <span class="text-[10px] font-bold">${isBought ? '<i data-lucide="check" class="w-3 h-3 inline"></i> PURCHASED' : 'LEVEL ' + i}</span>
+                    </button>`;
+            }
+            lucide.createIcons();
+        }
+
         window.addEventListener('load', async () => {
             await new Promise(r => setTimeout(r, 1000));
             if (window.signer) {
